@@ -515,11 +515,31 @@ select option { background: #1e1e1e; }
 const GRADES = ['4','4+','5','5+','6a','6a+','6b','6b+','6c','6c+','7a','7a+','7b','7b+','7c','7c+','8a','8a+','8b','8b+'];
 const GRADE_COLORS = ['#9FE1CB','#5DCAA5','#1D9E75','#0F6E56','#B5D4F4','#85B7EB','#378ADD','#185FA5','#CECBF6','#AFA9EC','#7F77DD','#534AB7','#F5C4B3','#F0997B','#D85A30','#993C1D','#F4C0D1','#ED93B1','#D4537E','#993356'];
 
-let sessions = JSON.parse(localStorage.getItem('bsessions') || '[]');
+let sessions = [];
 let chartP = null, chartG = null;
 let routeCount = 0;
+const STORAGE_KEY = 'flagit_sessions_v1';
 
-function save() { localStorage.setItem('bsessions', JSON.stringify(sessions)); }
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  } catch(e) {
+    toast('Opslaan mislukt — opslag vol?');
+  }
+}
+
+function loadSessions() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+      || localStorage.getItem('bsessions');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch(e) {}
+  return [];
+}
+
 function gi(g) { return GRADES.indexOf(g); }
 
 function showPage(id) {
@@ -751,6 +771,7 @@ function renderStats() {
 }
 
 /* INIT */
+sessions = loadSessions();
 document.getElementById('inp-date').value = new Date().toISOString().split('T')[0];
 addRouteCard();
 renderFeed();
