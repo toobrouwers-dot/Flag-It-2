@@ -43,7 +43,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .hero-stats{padding:24px 20px 20px;background:linear-gradient(160deg,#0f0d1f 0%,var(--bg) 60%);border-bottom:.5px solid var(--border)}
 .hero-greeting{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
 .hero-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;line-height:1;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:10px}
-.hero-flag{font-size:32px;line-height:1;display:inline-block;animation:flagWave 2s ease-in-out infinite;transform-origin:bottom left}
+.hero-logo{width:38px;height:38px;border-radius:10px;display:inline-block;animation:flagWave 2s ease-in-out infinite;transform-origin:bottom left}
 @keyframes flagWave{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(4deg)}}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden}
 .stat-box{background:var(--surface);padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -269,7 +269,7 @@ select option{background:#1e1e1e}
 <div id="page-home" class="page active">
   <div class="hero-stats">
     <div class="hero-greeting">Jouw stats</div>
-    <div class="hero-name"><span>Flag it</span><span class="hero-flag">🏴</span></div>
+    <div class="hero-name"><span>Flag it</span><img src="./icons/icon-192.png" alt="" class="hero-logo"></div>
     <div class="stats-row">
       <div class="stat-box"><div class="stat-num" id="hs-sessions">0</div><div class="stat-label">Sessies</div></div>
       <div class="stat-box"><div class="stat-num" id="hs-routes">0</div><div class="stat-label">Routes</div></div>
@@ -665,11 +665,33 @@ function renderGymsPage(){
 }
 function openGymPickerModal(){
   const ov=document.createElement('div');ov.className='modal-overlay';ov.id='gym-modal';
-  const lh=gyms.map((g,i)=>`<div class="modal-gym-item" onclick="selectGymFromModal(${i})"><div class="modal-gym-name">${esc(g.name)}</div>${g.fav?'<span style="color:var(--accent)">★</span>':''}</div>`).join('')||'<div style="color:var(--muted);font-size:14px;padding:8px 0">Voeg gyms toe via de Gyms tab</div>';
-  ov.innerHTML=`<div class="modal-box"><div class="modal-title">Kies een gym</div><div class="modal-gym-list">${lh}</div><button class="modal-close" onclick="document.getElementById('gym-modal').remove()">Annuleren</button></div>`;
-  document.body.appendChild(ov);ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()})
+  const lh=()=>gyms.length
+    ?gyms.map((g,i)=>`<div class="modal-gym-item" onclick="selectGymFromModal(${i})"><div class="modal-gym-name">${esc(g.name)}</div>${g.fav?'<span style="color:var(--accent)">★</span>':''}</div>`).join('')
+    :'<div style="color:var(--muted);font-size:14px;padding:8px 4px">Nog geen gyms</div>';
+  ov.innerHTML=`<div class="modal-box">
+    <div class="modal-title">Kies een gym</div>
+    <div class="modal-gym-list" id="gym-modal-list">${lh()}</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input type="text" id="modal-new-gym" placeholder="Nieuwe gym toevoegen..." style="flex:1;font-size:14px;padding:10px 12px">
+      <button onclick="addGymFromModal()" style="background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;padding:10px 16px;cursor:pointer;flex-shrink:0">+</button>
+    </div>
+    <button class="modal-close" onclick="document.getElementById('gym-modal').remove()">Annuleren</button>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  setTimeout(()=>document.getElementById('modal-new-gym')?.focus(),50);
 }
 function selectGymFromModal(idx){const g=gyms[idx];document.getElementById('gym-modal')?.remove();if(g)document.getElementById('inp-gym-select').value=g.name}
+function addGymFromModal(){
+  const inp=document.getElementById('modal-new-gym');if(!inp)return;
+  const name=inp.value.trim();if(!name)return;
+  if(gyms.find(g=>g.name.toLowerCase()===name.toLowerCase())){toast('Gym bestaat al','#e53935');return}
+  gyms.push({id:Date.now(),name,fav:gyms.length===0});saveGyms();inp.value='';
+  const listEl=document.getElementById('gym-modal-list');
+  if(listEl)listEl.innerHTML=gyms.map((g,i)=>`<div class="modal-gym-item" onclick="selectGymFromModal(${i})"><div class="modal-gym-name">${esc(g.name)}</div>${g.fav?'<span style="color:var(--accent)">★</span>':''}</div>`).join('');
+  refreshGymSelect();
+  selectGymFromModal(gyms.length-1);
+}
 
 /* ══════════════════════════════════════════
    ROUTE CARDS — kleur veld verwijderd
