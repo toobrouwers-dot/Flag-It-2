@@ -254,6 +254,13 @@ select option{background:#1e1e1e}
 .btn-edit-session:active{color:var(--accent);background:rgba(127,119,221,.12)}
 .goal-card.overdue{border-color:rgba(229,57,53,.4)}
 .goal-overdue-badge{font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--danger);text-transform:uppercase;background:rgba(229,57,53,.15);border-radius:20px;padding:3px 10px}
+.btn-export,.btn-import-label{flex:1;padding:14px;background:var(--surface);border:.5px solid var(--border);border-radius:12px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;text-align:center;transition:border-color .2s,color .2s;display:block}
+.btn-export:active,.btn-import-label:active{border-color:var(--accent);color:var(--accent)}
+.stats-gym-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:.5px solid var(--border)}
+.stats-gym-row:last-child{border-bottom:none}
+.stats-gym-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase}
+.stats-gym-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.stats-gym-grade{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -314,8 +321,16 @@ select option{background:#1e1e1e}
       <div class="pr-card"><div class="pr-label">Hoogste top</div><div class="pr-grade" id="pr-top">—</div><div class="pr-date" id="pr-top-date"></div></div>
       <div class="pr-card"><div class="pr-label">Hoogste flash</div><div class="pr-grade flash" id="pr-flash">—</div><div class="pr-date" id="pr-flash-date"></div></div>
     </div>
+    <div class="pr-card" style="margin-bottom:20px;display:flex;justify-content:space-around;align-items:center">
+      <div style="text-align:center"><div class="pr-label">Slagingspercentage</div><div class="pr-grade" id="pr-rate">—</div></div>
+      <div style="width:.5px;height:40px;background:var(--border)"></div>
+      <div style="text-align:center"><div class="pr-label">Totaal routes</div><div class="pr-grade" style="color:var(--text)" id="pr-total">—</div></div>
+      <div style="width:.5px;height:40px;background:var(--border)"></div>
+      <div style="text-align:center"><div class="pr-label">Gem. per sessie</div><div class="pr-grade" style="color:var(--text)" id="pr-avg">—</div></div>
+    </div>
     <div class="chart-card"><div class="chart-card-title">Max graad per sessie</div><div style="position:relative;height:180px"><canvas id="chart-progress"></canvas></div></div>
     <div class="chart-card"><div class="chart-card-title">Routes per graad (geslaagd)</div><div style="position:relative;height:180px"><canvas id="chart-grades"></canvas></div></div>
+    <div class="chart-card"><div class="chart-card-title">Per gym</div><div id="stats-gyms"><div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div></div></div>
   </div>
 </div>
 
@@ -406,6 +421,12 @@ select option{background:#1e1e1e}
     <div class="add-gym-row">
       <input type="text" id="inp-new-gym" placeholder="bijv. Monk, ClimbUp, Bjoeks...">
       <button class="btn-add-gym" onclick="addGym()">Voeg toe</button>
+    </div>
+    <div class="form-section-title" style="padding:20px 0 10px">Back-up</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-export" onclick="exportData()">↓ Exporteer</button>
+      <label class="btn-import-label" for="import-file-input">↑ Importeer</label>
+      <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importFile(event)">
     </div>
   </div>
 </div>
@@ -953,12 +974,83 @@ function renderStats(){
   const pt=getPR('top'),pf=getPR('flash');
   document.getElementById('pr-top').textContent=pt?pt.grade:'—';document.getElementById('pr-top-date').textContent=pt?fmtDate(pt.date):'';
   document.getElementById('pr-flash').textContent=pf?pf.grade:'—';document.getElementById('pr-flash-date').textContent=pf?fmtDate(pf.date):'';
+
+  // Success rate + totals
+  const allR=allRoutes(),total=allR.length,sent=allR.filter(r=>r.result!=='poging').length;
+  document.getElementById('pr-rate').textContent=total?Math.round(sent/total*100)+'%':'—';
+  document.getElementById('pr-total').textContent=total||'—';
+  document.getElementById('pr-avg').textContent=sessions.length?Math.round(total/sessions.length*10)/10:'—';
+
   const maxPS=sessions.map(s=>{const mg=maxGrade(s.routes);return mg?{date:s.date,idx:gi(mg.grade)}:null}).filter(Boolean);
   if(chartP)chartP.destroy();
   chartP=new Chart(document.getElementById('chart-progress'),{type:'line',data:{labels:maxPS.map(s=>s.date.slice(5)),datasets:[{data:maxPS.map(s=>s.idx),borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.12)',borderWidth:2,pointBackgroundColor:'#7f77dd',pointRadius:5,pointHoverRadius:7,tension:.35,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}},y:{min:0,max:GRADES.length-1,ticks:{color:'#666',font:{size:11},callback:v=>GRADES[v]||'',stepSize:2},grid:{color:'rgba(255,255,255,0.05)'}}}}});
-  const counts={};GRADES.forEach(g=>counts[g]=0);allRoutes().filter(r=>r.result!=='poging').forEach(r=>counts[r.grade]++);const used=GRADES.filter(g=>counts[g]>0);
+  const counts={};GRADES.forEach(g=>counts[g]=0);allR.filter(r=>r.result!=='poging').forEach(r=>counts[r.grade]++);const used=GRADES.filter(g=>counts[g]>0);
   if(chartG)chartG.destroy();
   chartG=new Chart(document.getElementById('chart-grades'),{type:'bar',data:{labels:used.length?used:['—'],datasets:[{data:used.length?used.map(g=>counts[g]):[0],backgroundColor:used.map(g=>GRADE_COLORS[GRADES.indexOf(g)]||'#444'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',font:{size:11}},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#666',font:{size:11},stepSize:1},grid:{color:'rgba(255,255,255,0.05)'}}}}});
+
+  // Per-gym breakdown
+  const gymStats={};
+  sessions.forEach(s=>{
+    if(!s.gym)return;
+    if(!gymStats[s.gym])gymStats[s.gym]={count:0,best:null,sent:0,total:0};
+    gymStats[s.gym].count++;
+    s.routes.forEach(r=>{gymStats[s.gym].total++;if(r.result!=='poging')gymStats[s.gym].sent++});
+    const mg=maxGrade(s.routes);
+    if(mg&&(!gymStats[s.gym].best||gi(mg.grade)>gi(gymStats[s.gym].best)))gymStats[s.gym].best=mg.grade;
+  });
+  const gymEl=document.getElementById('stats-gyms');
+  const gymKeys=Object.keys(gymStats);
+  gymEl.innerHTML=gymKeys.length
+    ?gymKeys.sort().map(gym=>{const st=gymStats[gym];const pct=st.total?Math.round(st.sent/st.total*100):0;
+      return`<div class="stats-gym-row"><div><div class="stats-gym-name">${esc(gym)}</div><div class="stats-gym-sub">${st.count} sessie${st.count!==1?'s':''} · ${pct}% geslaagd</div></div><div class="stats-gym-grade">${st.best||'—'}</div></div>`;
+    }).join('')
+    :'<div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div>';
+}
+
+/* ══════════════════════════════════════════
+   EXPORT / IMPORT
+══════════════════════════════════════════ */
+function exportData(){
+  const data={sessions,gyms,goals,hangSessions,exportedAt:new Date().toISOString(),version:2};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='flagit-backup-'+new Date().toISOString().split('T')[0]+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('Data geëxporteerd!');
+}
+
+function importFile(e){
+  const file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data.sessions)||!Array.isArray(data.gyms)){toast('Ongeldig back-upbestand','#e53935');return}
+      const ov=document.createElement('div');ov.className='modal-overlay';ov.id='import-ov';
+      ov.innerHTML=`<div class="confirm-box">
+        <div class="confirm-title">Data importeren?</div>
+        <div class="confirm-sub">${data.sessions.length} sessies · ${data.gyms.length} gyms · ${(data.goals||[]).length} doelen · ${(data.hangSessions||[]).length} hangsessies<br><span style="color:var(--danger);font-size:12px">Huidige data wordt overschreven.</span></div>
+        <div class="confirm-btns">
+          <button class="confirm-cancel" onclick="document.getElementById('import-ov').remove()">Annuleren</button>
+          <button class="confirm-delete" style="background:rgba(127,119,221,.15);border-color:var(--accent);color:var(--accent)" onclick="confirmImport(this)">Importeren</button>
+        </div>
+      </div>`;
+      ov._importData=data;
+      document.body.appendChild(ov);ov.addEventListener('click',ev2=>{if(ev2.target===ov)ov.remove()});
+    }catch(err){toast('Import mislukt — ongeldig JSON','#e53935')}
+  };
+  reader.readAsText(file);
+}
+
+function confirmImport(btn){
+  const ov=document.getElementById('import-ov');if(!ov)return;
+  const data=ov._importData;ov.remove();
+  sessions=data.sessions||[];gyms=data.gyms||[];goals=data.goals||[];hangSessions=data.hangSessions||[];
+  let migrated=false;gyms.forEach((g,i)=>{if(!g.id){g.id=Date.now()+i;migrated=true}});
+  save();saveGyms();saveGoals();saveHang();if(migrated)saveGyms();
+  refreshGymSelect();renderFeed();renderGymsPage();
+  toast('Data geïmporteerd!');
 }
 
 /* ══════════════════════════════════════════
@@ -989,6 +1081,7 @@ document.getElementById('inp-date').value=new Date().toISOString().split('T')[0]
 document.getElementById('hang-date').value=new Date().toISOString().split('T')[0];
 document.getElementById('inp-new-gym').addEventListener('keydown',e=>{if(e.key==='Enter')addGym()});
 refreshGymSelect();addRouteCard();renderFeed();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body>
 </html>
