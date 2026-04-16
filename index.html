@@ -250,6 +250,10 @@ select option{background:#1e1e1e}
 .filter-bar select{flex:1;min-width:100px;font-size:13px;padding:8px 10px}
 .btn-filter-clear{background:var(--surface2);border:.5px solid var(--border);border-radius:10px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;padding:8px 14px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:color .2s,border-color .2s;text-transform:uppercase;letter-spacing:.5px}
 .btn-filter-clear.active{color:var(--danger);border-color:var(--danger)}
+.btn-edit-session{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:8px;display:flex;align-items:center;transition:color .2s,background .2s;margin-top:2px}
+.btn-edit-session:active{color:var(--accent);background:rgba(127,119,221,.12)}
+.goal-card.overdue{border-color:rgba(229,57,53,.4)}
+.goal-overdue-badge{font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--danger);text-transform:uppercase;background:rgba(229,57,53,.15);border-radius:20px;padding:3px 10px}
 </style>
 </head>
 <body>
@@ -442,6 +446,7 @@ const GRIPS=['Volgreep','Half-krim','Krim','Sleuf','Mono','Twee-vinger','Pinch',
 let sessions=[],gyms=[],goals=[],hangSessions=[];
 let chartP=null,chartG=null,chartH=null;
 let routeCount=0,hangSetCount=0;
+let editMode=false,editSessionId=null;
 
 /* ══════════════════════════════════════════
    STORAGE
@@ -502,6 +507,11 @@ function calcStreak(){
    NAVIGATION
 ══════════════════════════════════════════ */
 function showPage(id){
+  if(id!=='log'&&editMode){
+    editMode=false;editSessionId=null;
+    document.querySelector('#page-log .page-title').textContent='Nieuwe sessie';
+    document.querySelector('#page-log .btn-save').textContent='Sessie opslaan';
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -564,8 +574,11 @@ function renderFeed(){
           <div class="activity-date">${fmtDate(s.date)} · ${s.routes.length} route${s.routes.length!==1?'s':''}</div>
           ${s.note?`<div class="activity-note">"${esc(s.note)}"</div>`:''}
         </div>
-        <div style="display:flex;align-items:flex-start;gap:12px">
-          <div style="text-align:right"><div class="activity-max">${mg?mg.grade:'—'}</div><div class="activity-max-label">max</div></div>
+        <div style="display:flex;align-items:flex-start;gap:4px">
+          <div style="text-align:right;margin-right:8px"><div class="activity-max">${mg?mg.grade:'—'}</div><div class="activity-max-label">max</div></div>
+          <button class="btn-edit-session" onclick="editSession(${s.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
           <button class="btn-delete-session" onclick="deleteSession(${s.id})">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
           </button>
@@ -589,6 +602,20 @@ function deleteSession(id){
   document.body.appendChild(ov);ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
 }
 function confirmDelete(id){document.getElementById('conf-ov')?.remove();sessions=sessions.filter(s=>s.id!==id);save();toast('Sessie verwijderd','#e53935');renderFeed()}
+
+function editSession(id){
+  const s=sessions.find(x=>x.id===id);if(!s)return;
+  editMode=true;editSessionId=id;
+  document.getElementById('inp-date').value=s.date;
+  document.getElementById('inp-note').value=s.note||'';
+  document.getElementById('route-cards').innerHTML='';routeCount=0;
+  s.routes.forEach(r=>addRouteCard(r.grade,r.attempts,r.result,r.type));
+  document.querySelector('#page-log .page-title').textContent='Sessie bewerken';
+  document.querySelector('#page-log .btn-save').textContent='Wijzigingen opslaan';
+  showPage('log');
+  refreshGymSelect();
+  if(s.gym)document.getElementById('inp-gym-select').value=s.gym;
+}
 
 /* ══════════════════════════════════════════
    GYMS
@@ -617,11 +644,11 @@ function renderGymsPage(){
 }
 function openGymPickerModal(){
   const ov=document.createElement('div');ov.className='modal-overlay';ov.id='gym-modal';
-  const lh=gyms.map(g=>`<div class="modal-gym-item" onclick="selectGymFromModal(${g.id})"><div class="modal-gym-name">${esc(g.name)}</div>${g.fav?'<span style="color:var(--accent)">★</span>':''}</div>`).join('')||'<div style="color:var(--muted);font-size:14px;padding:8px 0">Voeg gyms toe via de Gyms tab</div>';
+  const lh=gyms.map((g,i)=>`<div class="modal-gym-item" onclick="selectGymFromModal(${i})"><div class="modal-gym-name">${esc(g.name)}</div>${g.fav?'<span style="color:var(--accent)">★</span>':''}</div>`).join('')||'<div style="color:var(--muted);font-size:14px;padding:8px 0">Voeg gyms toe via de Gyms tab</div>';
   ov.innerHTML=`<div class="modal-box"><div class="modal-title">Kies een gym</div><div class="modal-gym-list">${lh}</div><button class="modal-close" onclick="document.getElementById('gym-modal').remove()">Annuleren</button></div>`;
   document.body.appendChild(ov);ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()})
 }
-function selectGymFromModal(id){const g=gyms.find(x=>x.id===id);document.getElementById('gym-modal')?.remove();if(g)document.getElementById('inp-gym-select').value=g.name}
+function selectGymFromModal(idx){const g=gyms[idx];document.getElementById('gym-modal')?.remove();if(g)document.getElementById('inp-gym-select').value=g.name}
 
 /* ══════════════════════════════════════════
    ROUTE CARDS — kleur veld verwijderd
@@ -678,13 +705,22 @@ function saveSession(){
       result:document.getElementById('rr-'+id).value
     })
   });
-  sessions.push({date,gym,note,routes,id:Date.now()});
+  const wasEdit=editMode;
+  if(wasEdit){
+    const idx=sessions.findIndex(s=>s.id===editSessionId);
+    if(idx!==-1)sessions[idx]={...sessions[idx],date,gym,note,routes};
+  }else{
+    sessions.push({date,gym,note,routes,id:Date.now()});
+  }
+  editMode=false;editSessionId=null;
+  document.querySelector('#page-log .page-title').textContent='Nieuwe sessie';
+  document.querySelector('#page-log .btn-save').textContent='Sessie opslaan';
   sessions.sort((a,b)=>a.date.localeCompare(b.date));
   save();
   document.getElementById('route-cards').innerHTML='';
   document.getElementById('inp-note').value='';
   routeCount=0;addRouteCard();
-  toast('Sessie opgeslagen! 🏴');showPage('home');
+  toast(wasEdit?'Sessie bijgewerkt! 🏴':'Sessie opgeslagen! 🏴');showPage('home');
 }
 
 /* ══════════════════════════════════════════
@@ -711,7 +747,7 @@ function deleteGoal(id){goals=goals.filter(g=>g.id!==id);saveGoals();renderGoals
 
 function renderGoals(){
   const trashSVG=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4h6v2"/></svg>`;
-  // Één lijst op volgorde van aanmaken (id = Date.now())
+  const today=new Date().toISOString().split('T')[0];
   const sorted=[...goals].sort((a,b)=>a.id-b.id);
   const container=document.getElementById('goals-list-all');
   if(!sorted.length){
@@ -722,15 +758,17 @@ function renderGoals(){
     const rLabel=g.result==='flash'?'Flash':'Top';
     if(g.type==='grade'){
       const done=gradeGoalAchieved(g);
-      return`<div class="goal-card ${done?'achieved':''}">
+      const overdue=!done&&g.deadline&&g.deadline<today;
+      const deadlineFmt=g.deadline?` · <span style="${overdue?'color:var(--danger)':''}">${fmtDate(g.deadline)}</span>`:'';
+      return`<div class="goal-card ${done?'achieved':overdue?'overdue':''}">
         <div class="goal-header">
           <div>
             <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">🧗 Graad-doel</div>
             <div class="goal-grade">${g.grade}</div>
-            <div class="goal-meta">${rLabel}${g.deadline?' · '+fmtDate(g.deadline):''}</div>
+            <div class="goal-meta">${rLabel}${deadlineFmt}</div>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
-            ${done?'<div class="goal-achieved-badge">✓ Gehaald!</div>':'<div style="font-size:22px">⏳</div>'}
+            ${done?'<div class="goal-achieved-badge">✓ Gehaald!</div>':overdue?'<div class="goal-overdue-badge">Verlopen</div>':'<div style="font-size:22px">⏳</div>'}
             <button class="btn-delete-goal" onclick="deleteGoal(${g.id})">${trashSVG}</button>
           </div>
         </div>
@@ -738,15 +776,17 @@ function renderGoals(){
       </div>`;
     }else{
       const prog=countGoalProgress(g),pct=Math.min(100,Math.round((prog/g.count)*100)),done=prog>=g.count;
-      return`<div class="goal-card ${done?'achieved':''}">
+      const overdue=!done&&g.deadline&&g.deadline<today;
+      const deadlineFmt=g.deadline?` · <span style="${overdue?'color:var(--danger)':''}">${fmtDate(g.deadline)}</span>`:'';
+      return`<div class="goal-card ${done?'achieved':overdue?'overdue':''}">
         <div class="goal-header">
           <div>
             <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">📊 Herhaling-doel</div>
             <div class="goal-grade">${g.grade}</div>
-            <div class="goal-meta">${rLabel} · ${g.count}×${g.deadline?' · '+fmtDate(g.deadline):''}</div>
+            <div class="goal-meta">${rLabel} · ${g.count}×${deadlineFmt}</div>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
-            ${done?'<div class="goal-achieved-badge">✓ Gehaald!</div>':''}
+            ${done?'<div class="goal-achieved-badge">✓ Gehaald!</div>':overdue?'<div class="goal-overdue-badge">Verlopen</div>':''}
             <button class="btn-delete-goal" onclick="deleteGoal(${g.id})">${trashSVG}</button>
           </div>
         </div>
