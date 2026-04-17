@@ -261,9 +261,42 @@ select option{background:#1e1e1e}
 .stats-gym-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase}
 .stats-gym-sub{font-size:12px;color:var(--muted);margin-top:1px}
 .stats-gym-grade{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;color:var(--accent)}
+
+/* START SCREEN */
+#start-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:env(safe-area-inset-top,40px) 32px env(safe-area-inset-bottom,40px);transition:opacity .5s ease,transform .5s ease;overflow:hidden}
+#start-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 100% 55% at 50% 20%,rgba(127,119,221,.2) 0%,transparent 70%);pointer-events:none}
+#start-screen.ss-hiding{opacity:0;transform:scale(.96)}
+.ss-logo-wrap{margin-bottom:28px;animation:ssPop .65s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes ssPop{from{opacity:0;transform:scale(.35) rotate(-20deg)}to{opacity:1;transform:none}}
+.ss-logo{width:100px;height:100px;border-radius:26px;animation:flagWave 2s ease-in-out infinite;transform-origin:bottom left}
+.ss-title{font-family:'Barlow Condensed',sans-serif;font-size:76px;font-weight:800;text-transform:uppercase;letter-spacing:1px;line-height:.9;text-align:center;animation:ssUp .5s .15s ease both}
+.ss-title span{color:var(--accent)}
+@keyframes ssUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.ss-sub{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2.5px;margin-top:10px;text-align:center;animation:ssUp .5s .25s ease both}
+.ss-features{margin-top:36px;display:flex;flex-direction:column;gap:10px;width:100%;max-width:290px;animation:ssUp .5s .35s ease both}
+.ss-feat{display:flex;align-items:center;gap:16px;background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:14px 18px}
+.ss-feat-icon{font-size:22px;flex-shrink:0}
+.ss-feat-text{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.ss-btn{margin-top:36px;width:100%;max-width:290px;padding:18px;background:var(--accent);border:none;border-radius:16px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:transform .1s,opacity .15s;animation:ssUp .5s .45s ease both;-webkit-tap-highlight-color:transparent}
+.ss-btn:active{transform:scale(.97);opacity:.85}
 </style>
 </head>
 <body>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <div class="ss-logo-wrap">
+    <img src="./icons/icon-192.png" alt="Flag It" class="ss-logo">
+  </div>
+  <div class="ss-title">Flag<span>it</span></div>
+  <div class="ss-sub">Jouw bouldering tracker</div>
+  <div class="ss-features">
+    <div class="ss-feat"><span class="ss-feat-icon">🧗</span><span class="ss-feat-text">Log routes &amp; sessies</span></div>
+    <div class="ss-feat"><span class="ss-feat-icon">📈</span><span class="ss-feat-text">Volg je voortgang</span></div>
+    <div class="ss-feat"><span class="ss-feat-icon">🎯</span><span class="ss-feat-text">Stel doelen in</span></div>
+  </div>
+  <button class="ss-btn" onclick="dismissStartScreen()">Begin met klimmen</button>
+</div>
 
 <!-- HOME -->
 <div id="page-home" class="page active">
@@ -1104,6 +1137,19 @@ document.getElementById('hang-date').value=new Date().toISOString().split('T')[0
 document.getElementById('inp-new-gym').addEventListener('keydown',e=>{if(e.key==='Enter')addGym()});
 refreshGymSelect();addRouteCard();renderFeed();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+/* ── START SCREEN ── */
+function dismissStartScreen(){
+  const el=document.getElementById('start-screen');
+  if(!el)return;
+  el.classList.add('ss-hiding');
+  setTimeout(()=>el.remove(),500);
+  localStorage.setItem('flagit_seen_v1','1');
+}
+if(localStorage.getItem('flagit_seen_v1')){
+  const el=document.getElementById('start-screen');
+  if(el)el.remove();
+}
 </script>
 </body>
 </html>
