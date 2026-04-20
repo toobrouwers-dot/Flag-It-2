@@ -673,6 +673,7 @@ function selectProfile(id){
   const ps=document.getElementById('profile-screen');
   if(ps){ps.classList.add('ps-hiding');setTimeout(()=>ps.remove(),400)}
   initApp(id);
+  showPage('home');
 }
 function renderProfileMgmt(){
   const el=document.getElementById('profile-mgmt-section');
@@ -1573,8 +1574,6 @@ function initApp(profileId){
     const el=document.getElementById('start-screen');
     if(el)el.remove();
   }
-
-  renderFeed();
 }
 
 /* ── Bootstrap: show profile screen before anything else ── */
