@@ -611,7 +611,11 @@ function showPage(id){
   if(id==='goals')renderGoals();
   if(id==='hang')renderHangPage();
   if(id==='gyms')renderGymsPage();
-  if(id==='log')refreshGymSelect();
+  if(id==='log'){
+    refreshGymSelect();
+    if(!editMode)document.getElementById('inp-date').value=new Date().toISOString().split('T')[0];
+  }
+  if(id==='hang')document.getElementById('hang-date').value=new Date().toISOString().split('T')[0];
 }
 
 function toast(msg,color){
@@ -649,13 +653,20 @@ function renderFeed(){
 
   let visible=[...sessions].reverse();
   if(fg)visible=visible.filter(s=>s.gym===fg);
-  if(fgr)visible=visible.filter(s=>{const mg=maxGrade(s.routes);return mg&&gi(mg.grade)>=gi(fgr)});
+  if(fgr)visible=visible.filter(s=>{
+    const mg=maxGrade(s.routes);
+    if(mg&&gi(mg.grade)>=gi(fgr))return true;
+    return s.routes.some(r=>gi(r.grade)>=gi(fgr));
+  });
 
   const feed=document.getElementById('feed');
+  const filterBar=document.getElementById('filter-bar');
   if(!sessions.length){
+    if(filterBar)filterBar.style.display='none';
     feed.innerHTML='<div class="empty-state"><div class="empty-icon">🧗</div><div class="empty-title">Nog geen sessies</div><div class="empty-sub">Log je eerste bouldering sessie en begin met het bijhouden van je voortgang.</div><button class="btn-empty-cta" onclick="showPage(\'log\')">Eerste sessie loggen</button></div>';
     return;
   }
+  if(filterBar)filterBar.style.display='';
   if(!visible.length){
     feed.innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Geen resultaten</div><div class="empty-sub">Geen sessies gevonden met de huidige filters.</div><button class="btn-empty-cta" onclick="clearFilters()">Filters wissen</button></div>';
     return;
@@ -1041,6 +1052,27 @@ function deleteHangSession(id){
   hangSessions=hangSessions.filter(s=>s.id!==id);
   saveHang();renderHangPage();toast('Verwijderd','#e53935');
 }
+function editHangSession(id){
+  const s=hangSessions.find(h=>h.id===id);if(!s)return;
+  hangSessions=hangSessions.filter(h=>h.id!==id);saveHang();
+  document.getElementById('hang-date').value=s.date;
+  document.getElementById('hang-note').value=s.note||'';
+  document.getElementById('hang-set-cards').innerHTML='';
+  hangSetCount=0;
+  s.sets.forEach(st=>{
+    addHangSetCard();
+    const cid=hangSetCount;
+    document.getElementById('hgrip-'+cid).value=st.grip;
+    document.getElementById('hsg-'+cid).textContent=st.grip;
+    document.getElementById('htime-'+cid).value=st.time;
+    document.getElementById('hrest-'+cid).value=st.rest;
+    document.getElementById('hreps-'+cid).value=st.reps;
+    document.getElementById('hwt-'+cid).value=st.weight;
+  });
+  renderHangPage();
+  document.getElementById('hang-date')?.scrollIntoView({behavior:'smooth',block:'center'});
+  toast('Bewerk hangsessie','#7f77dd');
+}
 
 function renderHangPage(){
   // PR per grip: langste hangtijd
@@ -1065,9 +1097,14 @@ function renderHangPage(){
         <div class="hang-card-sub">${s.sets.length} set${s.sets.length!==1?'s':''} · ${s.sets.reduce((a,b)=>a+(b.time*b.reps),0)}s totaal</div>
         ${s.note?`<div class="hang-card-note">"${esc(s.note)}"</div>`:''}
       </div>
-      <button class="btn-delete-session" onclick="deleteHangSession(${s.id})">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      </button>
+      <div style="display:flex;gap:4px">
+        <button class="btn-edit-session" onclick="editHangSession(${s.id})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn-delete-session" onclick="deleteHangSession(${s.id})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
     </div>
     <div class="hang-sets">${s.sets.map(st=>`<div class="hang-set-row">
       <div class="hang-set-grip">${st.grip}</div>
@@ -1208,6 +1245,7 @@ GRADES.forEach(g=>{const o=document.createElement('option');o.value=g;o.textCont
 document.getElementById('inp-date').value=new Date().toISOString().split('T')[0];
 document.getElementById('hang-date').value=new Date().toISOString().split('T')[0];
 document.getElementById('inp-new-gym').addEventListener('keydown',e=>{if(e.key==='Enter')addGym()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&timerRunning)toggleTimer()});
 refreshGymSelect();addRouteCard();renderFeed();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
