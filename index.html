@@ -235,6 +235,12 @@ select option{background:#1e1e1e}
 .btn-timer-start.running{background:rgba(229,57,53,.15);border-color:var(--danger);color:var(--danger)}
 .btn-timer-reset{flex:1;padding:14px;background:var(--surface);border:.5px solid var(--border);border-radius:12px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
 
+/* SESSION TIMER */
+.sess-timer-wrap{display:flex;align-items:center;justify-content:space-between;background:rgba(127,119,221,.08);border:.5px solid rgba(127,119,221,.25);border-radius:12px;padding:10px 16px;margin-bottom:12px}
+.sess-timer-time{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.sess-timer-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:2px}
+#chart-progress{cursor:pointer}
+
 /* GYMS */
 .gyms-content{padding:16px 20px}
 .gym-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px;animation:slideUp .2s ease both}
@@ -412,6 +418,10 @@ select option{background:#1e1e1e}
     </div>
     <div class="form-section">
       <div class="form-section-title">Routes</div>
+      <div id="sess-timer-bar" style="display:none" class="sess-timer-wrap">
+        <div><div class="sess-timer-time" id="sess-timer-time">0:00</div><div class="sess-timer-label">Sessietijd</div></div>
+        <div id="sess-timer-right" style="font-size:11px;color:var(--muted);text-align:right"></div>
+      </div>
       <div id="route-cards"></div>
       <button class="btn-add-route" onclick="addRouteCard()">+ Route toevoegen</button>
     </div>
@@ -579,6 +589,7 @@ let sessions=[],gyms=[],goals=[],hangSessions=[];
 let chartP=null,chartG=null,chartH=null;
 let routeCount=0,hangSetCount=0;
 let editMode=false,editSessionId=null;
+let sessionTimerStart=null,sessionTimerTick=null;
 
 /* ══════════════════════════════════════════
    PROFILES
@@ -954,6 +965,35 @@ function getMilestones(){
     }
   });
 
+  // Topped/flashed route count milestones
+  let runTops=0;
+  for(const s of sorted){
+    const prev=runTops;
+    runTops+=s.routes.filter(r=>r.result==='top'||r.result==='flash').length;
+    for(const n of[10,25,50,100,250,500]){
+      if(prev<n&&runTops>=n)ms.push({date:s.date,emoji:'💪',title:n+' routes geslaagd!',sub:n<50?'Goed bezig, blijf klimmen!':'Indrukwekkend aantal geslaagde routes!'});
+    }
+  }
+
+  // Flash streak: first session with 3+ flashes
+  for(const s of sorted){
+    const flashes=s.routes.filter(r=>r.result==='flash').length;
+    if(flashes>=3){ms.push({date:s.date,emoji:'⚡',title:'Flash-reeks!',sub:flashes+' flashes in één sessie — ongelooflijk!'});break;}
+  }
+
+  // Perfect session: first session (≥3 routes) with no 'poging' result
+  for(const s of sorted){
+    if(s.routes.length>=3&&s.routes.every(r=>r.result!=='poging')){ms.push({date:s.date,emoji:'🌟',title:'Perfecte sessie!',sub:'Alle routes van die dag gestuurd!'});break;}
+  }
+
+  // Consistency: first time sessions span 5 different calendar weeks
+  const weekOf=d=>{const dt=new Date(d+'T00:00:00'),j=new Date(dt.getFullYear(),0,1);return`${dt.getFullYear()}-${Math.ceil((((dt-j)/86400000)+j.getDay()+1)/7)}`};
+  const seenW=new Set();
+  for(const s of sorted){
+    seenW.add(weekOf(s.date));
+    if(seenW.size===5){ms.push({date:s.date,emoji:'📅',title:'5 weken actief!',sub:'Je klimt regelmatig — zo ga je echt vooruit!'});break;}
+  }
+
   return ms;
 }
 
@@ -1024,7 +1064,7 @@ function renderFeed(){
       <div class="activity-header">
         <div>
           <div class="activity-gym">${esc(s.gym||'Gym')}</div>
-          <div class="activity-date">${fmtDate(s.date)} · ${s.routes.length} route${s.routes.length!==1?'s':''}</div>
+          <div class="activity-date">${fmtDate(s.date)} · ${s.routes.length} route${s.routes.length!==1?'s':''}${(s.sessionStart&&s.sessionEnd)?' · ⏱ '+fmtSecs(Math.floor((s.sessionEnd-s.sessionStart)/1000)):''}</div>
           ${s.note?`<div class="activity-note">"${esc(s.note)}"</div>`:''}
         </div>
         <div style="display:flex;align-items:flex-start;gap:4px">
@@ -1154,6 +1194,7 @@ function addGymFromModal(){
    ROUTE CARDS — kleur veld verwijderd
 ══════════════════════════════════════════ */
 function addRouteCard(grade='6a',attempts=1,result='top',type=''){
+  if(!editMode&&routeCount===0)startSessionTimer();
   routeCount++;const id=routeCount;
   const div=document.createElement('div');div.className='route-card expanded';div.id='rc-'+id;
   div.innerHTML=`<div class="route-card-header" onclick="toggleRC(${id})">
@@ -1211,7 +1252,8 @@ function saveSession(){
     const idx=sessions.findIndex(s=>s.id===editSessionId);
     if(idx!==-1)sessions[idx]={...sessions[idx],date,gym,note,routes};
   }else{
-    sessions.push({date,gym,note,routes,id:Date.now()});
+    const sessionEnd=Date.now();
+    sessions.push({date,gym,note,routes,id:sessionEnd,sessionStart:sessionTimerStart,sessionEnd:sessionTimerStart?sessionEnd:null});
   }
   editMode=false;editSessionId=null;
   document.querySelector('#page-log .page-title').textContent='Nieuwe sessie';
@@ -1221,6 +1263,7 @@ function saveSession(){
   document.getElementById('route-cards').innerHTML='';
   document.getElementById('inp-note').value='';
   routeCount=0;addRouteCard();
+  resetSessionTimer();
   showPage('home');showSessionSummary(routes,wasEdit);
 }
 
@@ -1327,6 +1370,25 @@ function resetTimer(){
   document.getElementById('btn-timer').textContent='Start';
   document.getElementById('btn-timer').className='btn-timer-start';
   document.getElementById('timer-sub').textContent='Druk start om te beginnen'
+}
+
+/* -- Session timer (log page) -- */
+function startSessionTimer(){
+  if(sessionTimerStart)return; // already running
+  sessionTimerStart=Date.now();
+  const bar=document.getElementById('sess-timer-bar');
+  if(bar)bar.style.display='';
+  sessionTimerTick=setInterval(()=>{
+    const el=document.getElementById('sess-timer-time');
+    if(el)el.textContent=fmtSecs(Math.floor((Date.now()-sessionTimerStart)/1000));
+  },1000);
+}
+function resetSessionTimer(){
+  clearInterval(sessionTimerTick);sessionTimerTick=null;sessionTimerStart=null;
+  const bar=document.getElementById('sess-timer-bar');
+  if(bar)bar.style.display='none';
+  const el=document.getElementById('sess-timer-time');
+  if(el)el.textContent='0:00';
 }
 
 /* -- Hang set cards -- */
@@ -1461,9 +1523,10 @@ function renderStats(){
   document.getElementById('pr-total').textContent=total||'—';
   document.getElementById('pr-avg').textContent=sessions.length?Math.round(total/sessions.length*10)/10:'—';
 
-  const maxPS=sessions.map(s=>{const mg=maxGrade(s.routes);return mg?{date:s.date,idx:gi(mg.grade)}:null}).filter(Boolean);
+  const maxPS=[],chartSessions=[];
+  sessions.forEach(s=>{const mg=maxGrade(s.routes);if(mg){maxPS.push({date:s.date,idx:gi(mg.grade)});chartSessions.push(s);}});
   if(chartP)chartP.destroy();
-  chartP=new Chart(document.getElementById('chart-progress'),{type:'line',data:{labels:maxPS.map(s=>s.date.slice(5)),datasets:[{data:maxPS.map(s=>s.idx),borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.12)',borderWidth:2,pointBackgroundColor:'#7f77dd',pointRadius:5,pointHoverRadius:7,tension:.35,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}},y:{min:0,max:GRADES.length-1,ticks:{color:'#666',font:{size:11},callback:v=>GRADES[v]||'',stepSize:2},grid:{color:'rgba(255,255,255,0.05)'}}}}});
+  chartP=new Chart(document.getElementById('chart-progress'),{type:'line',data:{labels:maxPS.map(s=>s.date.slice(5)),datasets:[{data:maxPS.map(s=>s.idx),borderColor:'#7f77dd',backgroundColor:'rgba(127,119,221,0.12)',borderWidth:2,pointBackgroundColor:'#7f77dd',pointRadius:5,pointHoverRadius:7,tension:.35,fill:true}]},options:{responsive:true,maintainAspectRatio:false,onClick:(evt,items)=>{if(items.length>0)showSessionDetailModal(chartSessions[items[0].index]);},plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'}},y:{min:0,max:GRADES.length-1,ticks:{color:'#666',font:{size:11},callback:v=>GRADES[v]||'',stepSize:2},grid:{color:'rgba(255,255,255,0.05)'}}}}});
   const counts={};GRADES.forEach(g=>counts[g]=0);allR.filter(r=>r.result!=='poging').forEach(r=>counts[r.grade]++);const used=GRADES.filter(g=>counts[g]>0);
   if(chartG)chartG.destroy();
   chartG=new Chart(document.getElementById('chart-grades'),{type:'bar',data:{labels:used.length?used:['—'],datasets:[{data:used.length?used.map(g=>counts[g]):[0],backgroundColor:used.map(g=>GRADE_COLORS[GRADES.indexOf(g)]||'#444'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',font:{size:11}},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#666',font:{size:11},stepSize:1},grid:{color:'rgba(255,255,255,0.05)'}}}}});
@@ -1485,6 +1548,24 @@ function renderStats(){
       return`<div class="stats-gym-row"><div><div class="stats-gym-name">${esc(gym)}</div><div class="stats-gym-sub">${st.count} sessie${st.count!==1?'s':''} · ${pct}% geslaagd</div></div><div class="stats-gym-grade">${st.best||'—'}</div></div>`;
     }).join('')
     :'<div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div>';
+}
+
+function showSessionDetailModal(s){
+  document.getElementById('sess-detail-ov')?.remove();
+  const mg=maxGrade(s.routes);
+  const dur=(s.sessionStart&&s.sessionEnd)?fmtSecs(Math.floor((s.sessionEnd-s.sessionStart)/1000)):null;
+  const chips=s.routes.map(r=>`<div class="route-chip chip-${r.result}"><div class="dot"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`).join('');
+  const ov=document.createElement('div');ov.className='modal-overlay';ov.id='sess-detail-ov';
+  ov.innerHTML=`<div class="modal-box">
+    <div class="modal-title">${esc(s.gym||'Sessie')} <span style="font-size:14px;color:var(--muted);font-weight:400">${fmtDate(s.date)}</span></div>
+    ${dur?`<div style="font-size:13px;color:var(--muted);margin-bottom:10px">⏱ ${dur} sessieduur</div>`:''}
+    ${mg?`<div style="font-size:13px;color:var(--muted);margin-bottom:10px">Max: <span style="color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px">${esc(mg.grade)}</span></div>`:''}
+    ${s.note?`<div style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:10px">"${esc(s.note)}"</div>`:''}
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">${chips}</div>
+    <button class="modal-close" onclick="document.getElementById('sess-detail-ov').remove()">Sluiten</button>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
 }
 
 /* ══════════════════════════════════════════
