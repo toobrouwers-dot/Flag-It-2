@@ -638,6 +638,7 @@ select option{background:#1e1e1e}
     <div class="chart-card"><div class="chart-card-title">Routes per graad (geslaagd)</div><div style="position:relative;height:180px"><canvas id="chart-grades"></canvas></div></div>
     <div id="pyramid-section"></div>
     <div class="chart-card"><div class="chart-card-title">Per gym</div><div id="stats-gyms"><div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div></div></div>
+    <div id="grade-norm-section"></div>
   </div>
 </div>
 
@@ -1349,6 +1350,9 @@ function renderFeed(){
         </div>
         <div style="display:flex;align-items:flex-start;gap:4px">
           <div style="text-align:right;margin-right:8px"><div class="activity-max">${mg?mg.grade:'—'}</div><div class="activity-max-label">max</div></div>
+          <button class="btn-edit-session" onclick="shareSession(${s.id})" title="Delen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </button>
           <button class="btn-edit-session" onclick="editSession(${s.id})">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
@@ -2106,6 +2110,7 @@ function renderStats(){
       return`<div class="stats-gym-row"><div><div class="stats-gym-name">${esc(gym)}</div><div class="stats-gym-sub">${st.count} sessie${st.count!==1?'s':''} · ${pct}% geslaagd</div></div><div class="stats-gym-grade">${st.best||'—'}</div></div>`;
     }).join('')
     :'<div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div>';
+  renderGradeNorm();
 }
 
 function showSessionDetailModal(s){
@@ -2124,6 +2129,67 @@ function showSessionDetailModal(s){
   </div>`;
   document.body.appendChild(ov);
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+}
+
+/* ══════════════════════════════════════════
+   GRADE NORMALISATIE (Feature 7)
+══════════════════════════════════════════ */
+function renderGradeNorm(){
+  const el=document.getElementById('grade-norm-section');
+  if(!el)return;
+  const gymData={};
+  sessions.forEach(s=>{
+    if(!s.gym)return;
+    if(!gymData[s.gym])gymData[s.gym]={sent:[],total:0};
+    s.routes.forEach(r=>{
+      gymData[s.gym].total++;
+      if(r.result!=='poging'){const idx=gi(r.grade);if(idx>=0)gymData[s.gym].sent.push(idx);}
+    });
+  });
+  const qualified=Object.keys(gymData).filter(g=>gymData[g].sent.length>=3);
+  if(qualified.length<2){el.innerHTML='';return;}
+  const avgs=qualified.map(gym=>{
+    const d=gymData[gym];
+    const avg=d.sent.reduce((a,b)=>a+b,0)/d.sent.length;
+    return{gym,avg,total:d.total,sent:d.sent.length};
+  });
+  const ref=avgs.reduce((a,b)=>b.total>a.total?b:a);
+  avgs.sort((a,b)=>b.avg-a.avg);
+  const rows=avgs.map(g=>{
+    const diff=g.avg-ref.avg;
+    const sign=diff>0.35?'↑':diff<-0.35?'↓':'≈';
+    const color=diff>0.35?'var(--success)':diff<-0.35?'#e57373':'var(--muted)';
+    const diffStr=Math.abs(diff)>0.35?`${sign} ${Math.abs(diff).toFixed(1)} gr.`:`${sign} referentie`;
+    const refBadge=g.gym===ref.gym?` <span style="font-size:10px;background:var(--card2);padding:1px 5px;border-radius:8px;color:var(--muted)">ref</span>`:'';
+    return`<div class="stats-gym-row"><div><div class="stats-gym-name">${esc(g.gym)}${refBadge}</div><div class="stats-gym-sub">${g.sent}/${g.total} geslaagd · gem. ${GRADES[Math.round(g.avg)]||'—'}</div></div><div style="text-align:right"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--text)">${GRADES[Math.round(g.avg)]||'—'}</div><div style="font-size:11px;color:${color};font-weight:600">${diffStr}</div></div></div>`;
+  }).join('');
+  el.innerHTML=`<div class="chart-card"><div class="chart-card-title">Grade Normalisatie</div><div style="font-size:12px;color:var(--muted);margin-bottom:10px">Gem. geslaagde graad per gym — vergelijkt moeilijkheidsinstelling</div>${rows}</div>`;
+}
+
+/* ══════════════════════════════════════════
+   SOCIALE LAAG — SESSIE DELEN (Feature 8)
+══════════════════════════════════════════ */
+function shareSession(id){
+  const s=sessions.find(x=>x.id===id);if(!s)return;
+  const mg=maxGrade(s.routes);
+  const flashes=s.routes.filter(r=>r.result==='flash').length;
+  const tops=s.routes.filter(r=>r.result==='top').length;
+  const pct=s.routes.length?Math.round((flashes+tops)/s.routes.length*100):0;
+  const lines=[
+    `🧗 ${s.gym||'Klimsessie'} — ${fmtDate(s.date)}`,
+    mg?`Max graad: ${mg.grade}`:'',
+    `${s.routes.length} routes · ${tops} top${tops!==1?'s':''} · ${flashes} flash${flashes!==1?'es':''} · ${pct}% geslaagd`,
+    s.note?`"${s.note}"`:'',
+    '— gelogd met Flag-It 🏔️'
+  ].filter(Boolean).join('\n');
+  const btn=document.querySelector(`button[onclick="shareSession(${id})"]`);
+  if(navigator.share){
+    navigator.share({title:'Mijn klimsessie',text:lines}).catch(()=>{});
+  }else if(navigator.clipboard){
+    navigator.clipboard.writeText(lines).then(()=>{
+      if(btn){const orig=btn.innerHTML;btn.innerHTML='✓';setTimeout(()=>{btn.innerHTML=orig;},1500);}
+    }).catch(()=>{});
+  }
 }
 
 /* ══════════════════════════════════════════
