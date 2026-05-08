@@ -523,6 +523,19 @@ select option{background:#1e1e1e}
 /* HEAT BAR */
 .heat-bar{display:flex;gap:2px;padding:0 16px 12px}
 .heat-block{height:4px;border-radius:2px;flex:1;min-width:3px;max-width:20px;opacity:.9}
+
+/* PLATEAU BANNER */
+.plateau-banner{margin:12px 16px 0;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(127,119,221,.15),rgba(127,119,221,.04));border:.5px solid rgba(127,119,221,.3)}
+.plateau-icon{font-size:26px;flex-shrink:0}
+.plateau-text-main{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--accent2);text-transform:uppercase}
+.plateau-text-sub{font-size:12px;color:var(--muted);margin-top:1px}
+
+/* PROJECT NUDGE CARDS */
+.proj-nudge-card{margin:0 16px 10px;background:linear-gradient(135deg,rgba(255,193,7,.1),rgba(255,193,7,.03));border:.5px solid rgba(255,193,7,.25);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;animation:slideUp .3s ease both}
+.proj-nudge-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--flash);text-transform:uppercase;letter-spacing:.5px}
+.proj-nudge-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.proj-nudge-go{background:rgba(255,193,7,.15);border:.5px solid rgba(255,193,7,.4);border-radius:8px;color:var(--flash);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;text-transform:uppercase;white-space:nowrap;flex-shrink:0;margin-left:auto;transition:background .15s}
+.proj-nudge-go:active{background:rgba(255,193,7,.25)}
 </style>
 </head>
 <body>
@@ -570,6 +583,7 @@ select option{background:#1e1e1e}
     </div>
   </div>
   <div id="streak-banner-area"></div>
+  <div id="plateau-banner-area"></div>
   <div id="comp-countdown-area"></div>
   <div id="otd-section"></div>
   <div class="feed-toggle">
@@ -582,6 +596,7 @@ select option{background:#1e1e1e}
       <select id="filter-grade" onchange="renderFeed()"><option value="">Min. graad</option></select>
       <button class="btn-filter-clear" id="filter-clear-btn" onclick="clearFilters()">Wis</button>
     </div>
+    <div id="nudge-section"></div>
     <div class="section-title">Recente sessies</div>
     <div id="feed"></div>
   </div>
@@ -632,7 +647,7 @@ select option{background:#1e1e1e}
 
 <!-- STATS -->
 <div id="page-stats" class="page">
-  <div class="page-header"><div class="page-title">Voortgang</div></div>
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:center"><div class="page-title">Voortgang</div><button onclick="generateShareCard()" style="background:rgba(127,119,221,.15);border:.5px solid rgba(127,119,221,.4);border-radius:10px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;padding:8px 14px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:background .15s" onmousedown="this.style.background='rgba(127,119,221,.25)'" onmouseup="this.style.background='rgba(127,119,221,.15)'">Deel kaart</button></div>
   <div class="stats-content">
     <div id="insights-section"></div>
     <div class="pr-row">
@@ -652,6 +667,8 @@ select option{background:#1e1e1e}
     <div id="tli-section"></div>
     <div class="chart-card"><div class="chart-card-title">Routes per graad (geslaagd)</div><div style="position:relative;height:180px"><canvas id="chart-grades"></canvas></div></div>
     <div id="pyramid-section"></div>
+    <div id="pyramid-audit-section"></div>
+    <div id="stoke-radar-section"></div>
     <div class="chart-card"><div class="chart-card-title">Per gym</div><div id="stats-gyms"><div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div></div></div>
     <div id="grade-norm-section"></div>
   </div>
@@ -759,6 +776,8 @@ select option{background:#1e1e1e}
     </div>
     <div class="form-section-title" style="padding:16px 0 10px">Gym Resets</div>
     <div id="reset-section"></div>
+    <div class="form-section-title" style="padding:8px 0 10px">Bezoekpatroon</div>
+    <div id="quiet-time-section"></div>
     <div class="form-section-title" style="padding:8px 0 10px">Back-up</div>
     <div style="display:flex;gap:8px">
       <button class="btn-export" onclick="exportData()">↓ Exporteer</button>
@@ -830,7 +849,7 @@ const GRIPS=['Volgreep','Half-krim','Krim','Sleuf','Mono','Twee-vinger','Pinch',
 let sessions=[],gyms=[],goals=[],hangSessions=[],projects=[],injuries=[],competitions=[],gymResets=[];
 let activePlan=null;
 let feedTab='feed';
-let chartP=null,chartG=null,chartH=null,tliChart=null;
+let chartP=null,chartG=null,chartH=null,tliChart=null,stokeRadarChart=null;
 let routeCount=0,hangSetCount=0;
 let editMode=false,editSessionId=null;
 let pendingNavTarget=null;
@@ -1333,8 +1352,10 @@ function renderFeed(){
   document.getElementById('hs-pr').textContent=pt?pt.grade:'—';
   const se=document.getElementById('hs-streak');se.textContent=streak;se.className='stat-num'+(streak>=2?' streak-active':'');
   document.getElementById('streak-banner-area').innerHTML=streak>=2?`<div class="streak-banner"><div class="streak-fire">🔥</div><div><div class="streak-text-main">${streak} weken op rij!</div><div class="streak-text-sub">Blijf zo doorgaan — je bent op de goede weg</div></div></div>`:'';
+  renderPlateauBanner();
   renderCompCountdown();
   renderOnThisDay();
+  renderNudges();
 
   // Sync gym filter options with sessions
   const fgEl=document.getElementById('filter-gym');
@@ -1515,6 +1536,7 @@ function renderGymsPage(){
   if(!gyms.length){list.innerHTML='<div class="empty-state" style="padding:30px 0"><div>Nog geen gyms — voeg er een toe hieronder.</div></div>';}
   else{list.innerHTML=gyms.map(g=>`<div class="gym-item ${g.fav?'is-fav':''}"><div><div class="gym-item-name">${esc(g.name)}</div>${g.fav?'<div class="gym-item-fav-badge">★ Favoriet</div>':''}</div><div class="gym-actions"><button class="btn-fav ${g.fav?'active':''}" onclick="setFav(${g.id})">${g.fav?'★ Favoriet':'Favoriet'}</button><button class="btn-del-gym" onclick="deleteGym(${g.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4h6v2"/></svg></button></div></div>`).join('')}
   renderResetSection();
+  renderQuietTime();
 }
 function openGymPickerModal(){
   const ov=document.createElement('div');ov.className='modal-overlay';ov.id='gym-modal';
@@ -2199,6 +2221,8 @@ function renderStats(){
   chartG=new Chart(document.getElementById('chart-grades'),{type:'bar',data:{labels:used.length?used:['—'],datasets:[{data:used.length?used.map(g=>counts[g]):[0],backgroundColor:used.map(g=>GRADE_COLORS[GRADES.indexOf(g)]||'#444'),borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#666',font:{size:11}},grid:{display:false}},y:{beginAtZero:true,ticks:{color:'#666',font:{size:11},stepSize:1},grid:{color:'rgba(255,255,255,0.05)'}}}}});
 
   renderPyramid();
+  renderPyramidAudit();
+  renderStokeRadar();
 
   // Per-gym breakdown
   const gymStats={};
@@ -2359,6 +2383,7 @@ function renderProjects(){
 function logAttempt(id){
   const p=projects.find(x=>x.id===id);if(!p)return;
   p.attempts++;
+  p.lastAttemptDate=new Date().toISOString().split('T')[0];
   saveProjects();
   haptic(8);
   toast(p.attempts+' pogingen');
@@ -2957,6 +2982,320 @@ function deleteInjury(id){
 }
 
 /* ══════════════════════════════════════════
+   GRADE PYRAMID AUDITOR
+══════════════════════════════════════════ */
+function renderPyramidAudit(){
+  const el=document.getElementById('pyramid-audit-section');
+  if(!el)return;
+  if(sessions.length<5){el.innerHTML='';return;}
+  const sentRoutes=allRoutes().filter(r=>r.result==='top'||r.result==='flash');
+  if(!sentRoutes.length){el.innerHTML='';return;}
+  const prIdx=sentRoutes.reduce((b,r)=>gi(r.grade)>b?gi(r.grade):b,-1);
+  if(prIdx<2){el.innerHTML='';return;}
+  const actual=Array(GRADES.length).fill(0);
+  sentRoutes.forEach(r=>actual[gi(r.grade)]++);
+  const prCount=Math.max(1,actual[prIdx]);
+  const checkGrades=[];
+  for(let i=prIdx;i>=Math.max(0,prIdx-5);i--){
+    const dist=prIdx-i;
+    const ideal=Math.round(prCount*Math.pow(2,dist));
+    checkGrades.push({gradeIdx:i,grade:GRADES[i],actual:actual[i],ideal,deficit:Math.max(0,ideal-actual[i])});
+  }
+  const totalDeficit=checkGrades.reduce((a,b)=>a+b.deficit,0);
+  if(totalDeficit===0){
+    el.innerHTML=`<div class="chart-card" style="margin-bottom:16px"><div class="chart-card-title">Piramide Audit ✓</div><div style="color:var(--success);font-size:13px;padding:4px 0">Jouw piramide is goed in balans — blijf zo doorgaan!</div></div>`;
+    return;
+  }
+  const worstDeficit=checkGrades.reduce((a,b)=>b.deficit>a.deficit?b:a);
+  const rows=checkGrades.map(d=>{
+    const maxVal=Math.max(d.actual,d.ideal,1);
+    const actualPct=Math.round((d.actual/maxVal)*100);
+    const idealPct=Math.round((d.ideal/maxVal)*100);
+    const color=GRADE_COLORS[d.gradeIdx]||'#777';
+    const deficit=d.deficit>0;
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:${color};width:34px;text-align:right;flex-shrink:0">${d.grade}</div>
+      <div style="flex:1;position:relative;height:16px">
+        <div style="position:absolute;inset:0;background:var(--surface2);border-radius:3px"></div>
+        <div style="position:absolute;top:0;left:0;height:100%;width:${idealPct}%;background:rgba(255,255,255,.06);border-radius:3px;border-right:1.5px dashed rgba(255,255,255,.18)"></div>
+        <div style="position:absolute;top:0;left:0;height:100%;width:${actualPct}%;background:${color};opacity:.85;border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)"></div>
+      </div>
+      <div style="font-size:11px;width:54px;text-align:right;flex-shrink:0;font-weight:600;color:${deficit?'var(--flash)':'var(--success)'}">${d.actual}/${d.ideal}${deficit?' −'+d.deficit:' ✓'}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div class="chart-card" style="margin-bottom:16px">
+    <div class="chart-card-title">Piramide Audit</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Huidige routes (blok) vs ideaal (stippel) · Meer <strong style="color:var(--flash)">${esc(worstDeficit.grade)}</strong> aanbevolen</div>
+    ${rows}
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">Ideaal = 2× meer routes per graad lager dan je PR</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   STOKE RADAR
+══════════════════════════════════════════ */
+function renderStokeRadar(){
+  const el=document.getElementById('stoke-radar-section');
+  if(!el)return;
+  if(stokeRadarChart){stokeRadarChart.destroy();stokeRadarChart=null;}
+  const feelSessions=sessions.filter(s=>s.feel!=null);
+  if(feelSessions.length<5){el.innerHTML='';return;}
+  const typeTotal={};const typeCnt={};
+  feelSessions.forEach(s=>{
+    s.routes.forEach(r=>{
+      if(!r.type)return;
+      typeTotal[r.type]=(typeTotal[r.type]||0)+s.feel;
+      typeCnt[r.type]=(typeCnt[r.type]||0)+1;
+    });
+  });
+  const types=Object.keys(typeCnt).filter(t=>typeCnt[t]>=3);
+  if(types.length<3){el.innerHTML='';return;}
+  const avgFeel=types.map(t=>parseFloat((typeTotal[t]/typeCnt[t]).toFixed(2)));
+  el.innerHTML=`<div class="chart-card" style="margin-bottom:16px">
+    <div class="chart-card-title">Stoke Radar</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Gem. sessiegevoel per routetype (0=😓 · 3=🔥)</div>
+    <div style="position:relative;height:230px"><canvas id="chart-stoke"></canvas></div>
+  </div>`;
+  const canvas=document.getElementById('chart-stoke');
+  if(!canvas)return;
+  stokeRadarChart=new Chart(canvas,{
+    type:'radar',
+    data:{
+      labels:types,
+      datasets:[{
+        data:avgFeel,
+        borderColor:'rgba(127,119,221,.9)',
+        backgroundColor:'rgba(127,119,221,.18)',
+        borderWidth:2,
+        pointBackgroundColor:'#7f77dd',
+        pointRadius:4,
+        pointHoverRadius:6
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{r:{
+        min:0,max:3,
+        ticks:{color:'#555',font:{size:10},stepSize:1,callback:v=>['😓','😐','💪','🔥'][v]||v,backdropColor:'transparent'},
+        grid:{color:'rgba(255,255,255,.07)'},
+        angleLines:{color:'rgba(255,255,255,.07)'},
+        pointLabels:{color:'#aaa',font:{size:11,family:"'Barlow Condensed',sans-serif",weight:'700'}}
+      }}
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
+   SHARE CARD GENERATOR
+══════════════════════════════════════════ */
+function _roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+function generateShareCard(){
+  const profiles=loadProfiles();
+  const activeProfile=profiles.find(p=>p.id===activeProfileId);
+  const profileName=activeProfile?activeProfile.name:'Klimmer';
+  const profileEmoji=activeProfile?activeProfile.emoji:'🧗';
+  const mg=getPR('top');const mf=getPR('flash');
+  const streak=calcStreak();
+  const ar=allRoutes();
+  const sent=ar.filter(r=>r.result!=='poging').length;
+  const rate=ar.length?Math.round(sent/ar.length*100):0;
+  const W=400,H=700;
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  const ctx=c.getContext('2d');
+  // Background gradient
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#10102e');bg.addColorStop(.55,'#0d0b20');bg.addColorStop(1,'#0a0a0a');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // Purple glow top
+  const glow=ctx.createRadialGradient(W/2,0,0,W/2,0,280);
+  glow.addColorStop(0,'rgba(127,119,221,.4)');glow.addColorStop(1,'rgba(127,119,221,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+  // Header: logo word
+  ctx.fillStyle='#7f77dd';ctx.font='900 64px Impact,Arial Black,sans-serif';ctx.textAlign='left';
+  ctx.fillText('FLAG',32,82);
+  ctx.fillStyle='#f5f5f5';ctx.fillText('IT',196,82);
+  // Profile name
+  ctx.fillStyle='rgba(175,169,236,.7)';ctx.font='600 13px Arial,sans-serif';
+  ctx.fillText((profileEmoji+' '+profileName).toUpperCase(),32,108);
+  // Divider
+  ctx.strokeStyle='rgba(127,119,221,.35)';ctx.lineWidth=.5;
+  ctx.beginPath();ctx.moveTo(32,124);ctx.lineTo(W-32,124);ctx.stroke();
+  // PR cards
+  const prBoxW=(W-72)/2;
+  [[mg?mg.grade:'—','PR TOP','#7f77dd',32,138],[mf?mf.grade:'—','PR FLASH','#ffc107',44+prBoxW,138]].forEach(([val,lbl,color,bx,by])=>{
+    ctx.fillStyle='rgba(255,255,255,.04)';_roundRect(ctx,bx,by,prBoxW,106,10);ctx.fill();
+    ctx.strokeStyle=color+'44';ctx.lineWidth=.5;_roundRect(ctx,bx,by,prBoxW,106,10);ctx.stroke();
+    ctx.fillStyle='#666';ctx.font='600 11px Arial,sans-serif';ctx.textAlign='left';
+    ctx.fillText(lbl,bx+14,by+24);
+    ctx.fillStyle=color;ctx.font='900 52px Impact,Arial Black,sans-serif';
+    ctx.fillText(String(val),bx+14,by+84);
+  });
+  // Stats grid: 4 boxes
+  const statItems=[
+    {lbl:'SESSIES',val:String(sessions.length)},
+    {lbl:'ROUTES',val:String(ar.length)},
+    {lbl:'SLAGINGS%',val:rate+'%'},
+    {lbl:'STREAK',val:streak+(streak===1?' WK':' WK')}
+  ];
+  const sbW=(W-72)/2,sbH=80;
+  statItems.forEach((s,i)=>{
+    const col=i%2,row=Math.floor(i/2);
+    const bx=32+col*(sbW+8),by=264+row*(sbH+8);
+    ctx.fillStyle='rgba(255,255,255,.04)';_roundRect(ctx,bx,by,sbW,sbH,10);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.09)';ctx.lineWidth=.5;_roundRect(ctx,bx,by,sbW,sbH,10);ctx.stroke();
+    ctx.fillStyle='#f5f5f5';ctx.font='900 30px Impact,Arial Black,sans-serif';ctx.textAlign='left';
+    ctx.fillText(s.val,bx+14,by+40);
+    ctx.fillStyle='#666';ctx.font='600 10px Arial,sans-serif';
+    ctx.fillText(s.lbl,bx+14,by+60);
+  });
+  // Grade pyramid mini (top 7 sent grades as horizontal bars)
+  const sentR=ar.filter(r=>r.result!=='poging');
+  const cnt={};sentR.forEach(r=>{cnt[r.grade]=(cnt[r.grade]||0)+1;});
+  const topGrades=GRADES.filter(g=>cnt[g]).slice(-7).reverse();
+  if(topGrades.length){
+    const pyY=448;const pyX=32;const pyW=W-64;
+    ctx.fillStyle='rgba(127,119,221,.5)';ctx.font='600 10px Arial,sans-serif';ctx.textAlign='left';
+    ctx.fillText('GRADE PYRAMIDE',pyX,pyY-6);
+    const maxCnt=Math.max(...topGrades.map(g=>cnt[g]||0),1);
+    topGrades.forEach((g,i)=>{
+      const barY=pyY+i*26;
+      const barW=Math.max(6,Math.round(((cnt[g]||0)/maxCnt)*(pyW-60)));
+      const col=GRADE_COLORS[GRADES.indexOf(g)]||'#777';
+      ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(pyX+44,barY,pyW-60,18);
+      ctx.fillStyle=col+'bb';ctx.fillRect(pyX+44,barY,barW,18);
+      ctx.fillStyle='#ddd';ctx.font='700 11px Arial,sans-serif';ctx.textAlign='right';
+      ctx.fillText(g,pyX+38,barY+13);
+      ctx.fillStyle='#888';ctx.textAlign='left';
+      ctx.fillText(String(cnt[g]),pyX+44+barW+5,barY+13);
+    });
+  }
+  // Footer
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(0,H-48,W,1);
+  ctx.fillStyle='rgba(175,169,236,.65)';ctx.font='500 11px Arial,sans-serif';ctx.textAlign='center';
+  ctx.fillText('Gelogd met Flag-It  🧗  github.com/flag-it',W/2,H-20);
+  // Show modal
+  const img=c.toDataURL('image/png');
+  document.getElementById('share-card-ov')?.remove();
+  const ov=document.createElement('div');ov.className='modal-overlay';ov.id='share-card-ov';
+  ov.innerHTML=`<div class="modal-box" style="max-height:85dvh">
+    <div class="modal-title">Jouw Klimkaart 🧗</div>
+    <div style="overflow-y:auto;flex:1;margin-bottom:14px">
+      <img src="${img}" style="display:block;width:100%;border-radius:12px">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="confirm-cancel" onclick="document.getElementById('share-card-ov').remove()">Sluiten</button>
+      <button class="btn-save" style="flex:2;padding:14px;font-size:17px" onclick="downloadShareCard('${img}')">↓ Downloaden</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+}
+function downloadShareCard(dataUrl){
+  const a=document.createElement('a');a.href=dataUrl;a.download='flagit-klimkaart-'+new Date().toISOString().split('T')[0]+'.png';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  toast('Klimkaart gedownload!');
+}
+
+/* ══════════════════════════════════════════
+   PLATEAU BANNER
+══════════════════════════════════════════ */
+function renderPlateauBanner(){
+  const el=document.getElementById('plateau-banner-area');
+  if(!el)return;
+  if(sessions.length<5){el.innerHTML='';return;}
+  const ar=allRoutes();
+  const sentR=ar.filter(r=>r.result==='top'||r.result==='flash');
+  if(!sentR.length){el.innerHTML='';return;}
+  const today=new Date().toISOString().split('T')[0];
+  const prGrade=sentR.reduce((b,r)=>gi(r.grade)>gi(b.grade)?r:b,sentR[0]).grade;
+  const prDate=sentR.filter(r=>gi(r.grade)>=gi(prGrade)).map(r=>r.date).sort().reverse()[0];
+  if(!prDate){el.innerHTML='';return;}
+  const daysSince=Math.floor((new Date(today)-new Date(prDate+'T00:00:00'))/86400000);
+  if(daysSince<28){el.innerHTML='';return;}
+  const weeks=Math.floor(daysSince/7);
+  const nextGrade=GRADES[Math.min(gi(prGrade)+1,GRADES.length-1)];
+  el.innerHTML=`<div class="plateau-banner">
+    <div class="plateau-icon">📊</div>
+    <div>
+      <div class="plateau-text-main">${weeks} weken op plateau</div>
+      <div class="plateau-text-sub">PR ${esc(prGrade)} staat stil — probeer gericht ${esc(nextGrade)}</div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   PROJECT NUDGES
+══════════════════════════════════════════ */
+function renderNudges(){
+  const el=document.getElementById('nudge-section');
+  if(!el){return;}
+  if(!projects.length){el.innerHTML='';return;}
+  const today=new Date().toISOString().split('T')[0];
+  const stale=projects
+    .filter(p=>p.status==='project')
+    .map(p=>{
+      const lastActive=p.lastAttemptDate||p.createdAt||'2000-01-01';
+      const days=Math.round((new Date(today+'T00:00:00')-new Date(lastActive+'T00:00:00'))/86400000);
+      return{...p,daysSince:days};
+    })
+    .filter(p=>p.daysSince>=21)
+    .sort((a,b)=>b.daysSince-a.daysSince)
+    .slice(0,2);
+  if(!stale.length){el.innerHTML='';return;}
+  const label=stale.length===1?'project mist jou':'projecten missen jou';
+  el.innerHTML=`<div class="section-title" style="padding:16px 20px 8px">👻 ${stale.length} ${label}</div>`+
+    stale.map((p,i)=>`
+    <div class="proj-nudge-card" style="animation-delay:${i*.05}s">
+      <div style="font-size:22px;flex-shrink:0">🧗</div>
+      <div style="flex:1;min-width:0">
+        <div class="proj-nudge-name">${esc(p.grade)}${p.name?' · '+esc(p.name.slice(0,22)):''}</div>
+        <div class="proj-nudge-sub">${p.daysSince} dagen geen pogingen${p.gym?' @ '+esc(p.gym):''}</div>
+      </div>
+      <button class="proj-nudge-go" onclick="showPage('projects')">Aanpakken →</button>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   GYM QUIET-TIME PREDICTOR
+══════════════════════════════════════════ */
+function renderQuietTime(){
+  const el=document.getElementById('quiet-time-section');
+  if(!el)return;
+  if(sessions.length<6){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:4px 0 12px">Log minimaal 6 sessies voor een bezoekpatroon</div>';return;}
+  const DAYS=['Zo','Ma','Di','Wo','Do','Vr','Za'];
+  const dayCounts=Array(7).fill(0);
+  sessions.forEach(s=>{
+    const dow=new Date(s.date+'T00:00:00').getDay();
+    dayCounts[dow]++;
+  });
+  const maxC=Math.max(...dayCounts);
+  const minNonZero=Math.min(...dayCounts.filter(x=>x>0));
+  const quietIdx=dayCounts.indexOf(minNonZero);
+  const bars=dayCounts.map((cnt,i)=>{
+    const pct=maxC?Math.round((cnt/maxC)*100):0;
+    const isQuiet=cnt>0&&cnt===minNonZero;
+    const isBusy=cnt===maxC;
+    const barColor=isQuiet?'var(--success)':isBusy?'var(--accent)':'rgba(127,119,221,.4)';
+    const lblColor=isQuiet?'var(--success)':isBusy?'var(--accent)':'var(--muted)';
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+      <div style="font-size:10px;color:${lblColor};font-weight:600;min-height:14px">${cnt||''}</div>
+      <div style="width:100%;max-width:32px;background:var(--surface2);border-radius:4px;height:48px;display:flex;align-items:flex-end;overflow:hidden">
+        <div style="width:100%;background:${barColor};height:${pct||0}%;border-radius:4px;min-height:${cnt?4:0}px;transition:height .4s cubic-bezier(.4,0,.2,1)"></div>
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:${lblColor}">${DAYS[i]}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div class="chart-card" style="margin-bottom:16px">
+    <div class="chart-card-title">Jouw bezoekpatroon</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Op basis van jouw eigen sessies — jij klimt het minst op <strong style="color:var(--success)">${DAYS[quietIdx]}</strong></div>
+    <div style="display:flex;gap:4px;align-items:flex-end;padding:0 2px">${bars}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
    AI TRAININGSCOACH
 ══════════════════════════════════════════ */
 function computeCoachAdvice(){
@@ -3130,6 +3469,7 @@ function initApp(profileId){
   if(chartG){chartG.destroy();chartG=null}
   if(chartH){chartH.destroy();chartH=null}
   if(tliChart){tliChart.destroy();tliChart=null}
+  if(stokeRadarChart){stokeRadarChart.destroy();stokeRadarChart=null}
   currentFeel=null;
   pyramidFilter='all';
   // Reset timer
