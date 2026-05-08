@@ -626,6 +626,57 @@ select option{background:#1e1e1e}
 .proj-nudge-sub{font-size:12px;color:var(--muted);margin-top:1px}
 .proj-nudge-go{background:rgba(255,193,7,.15);border:.5px solid rgba(255,193,7,.4);border-radius:8px;color:var(--flash);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;text-transform:uppercase;white-space:nowrap;flex-shrink:0;margin-left:auto;transition:background .15s}
 .proj-nudge-go:active{background:rgba(255,193,7,.25)}
+
+/* ═══ STREAK REAPER ═══ */
+.reaper-banner{margin:12px 16px 0;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(20,0,0,.85),rgba(10,0,0,.4));border:.5px solid rgba(150,0,0,.4);position:relative;overflow:hidden}
+.reaper-icon{font-size:36px;flex-shrink:0;animation:reaperFloat 3s ease-in-out infinite}
+@keyframes reaperFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+.reaper-text-main{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#cc3333;text-transform:uppercase}
+.reaper-text-sub{font-size:12px;color:var(--muted)}
+@keyframes reaperScan{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+.reaper-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(200,0,0,.06),transparent);animation:reaperScan 5s ease-in-out infinite}
+
+/* ═══ SESSION REPLAY ═══ */
+.replay-overlay{position:fixed;inset:0;background:#050505;z-index:400;display:flex;flex-direction:column;overflow:hidden}
+.replay-header{padding:calc(env(safe-area-inset-top,0px) + 20px) 24px 14px;border-bottom:.5px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between}
+.replay-gym{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;text-transform:uppercase;color:var(--accent)}
+.replay-date{font-size:13px;color:var(--muted);margin-top:2px}
+.replay-body{flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:0}
+.replay-route-row{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:.5px solid var(--border);opacity:0;transform:translateX(-24px);transition:opacity .35s ease,transform .35s ease}
+.replay-route-row:last-child{border-bottom:none}
+.replay-route-row.appeared{opacity:1;transform:none}
+.replay-route-idx{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);width:22px;flex-shrink:0}
+.replay-route-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.replay-route-grade{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;line-height:1;flex:1}
+.replay-route-meta{text-align:right}
+.replay-route-badge{display:inline-block;font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-radius:20px;padding:3px 10px}
+.replay-route-type{font-size:11px;color:var(--muted);margin-top:3px}
+.replay-footer{padding:14px 24px calc(env(safe-area-inset-bottom,0px) + 18px);display:flex;gap:8px}
+
+/* ═══ VIBE MODE ═══ */
+.page-header.vibe-0{background:linear-gradient(135deg,rgba(20,45,80,.55) 0%,rgba(10,10,10,.93) 80%) !important}
+.page-header.vibe-1{background:linear-gradient(135deg,rgba(40,30,80,.55) 0%,rgba(10,10,10,.93) 80%) !important}
+.page-header.vibe-2{background:linear-gradient(135deg,rgba(15,65,30,.55) 0%,rgba(10,10,10,.93) 80%) !important}
+.page-header.vibe-3{background:linear-gradient(135deg,rgba(90,30,10,.55) 0%,rgba(10,10,10,.93) 80%) !important}
+.feel-btn{transition:border-color .25s,background .25s,color .25s}
+
+/* ═══ GRADE ORACLE ═══ */
+.oracle-card{background:linear-gradient(135deg,rgba(127,119,221,.15),rgba(127,119,221,.04));border:.5px solid rgba(127,119,221,.35);border-radius:14px;padding:16px;margin-bottom:16px}
+.oracle-eyebrow{font-size:10px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
+.oracle-row{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+.oracle-grade{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:800;color:var(--accent);line-height:1}
+.oracle-days{font-size:14px;color:var(--muted);line-height:1.3}
+.oracle-date-str{font-size:13px;color:var(--muted);margin-bottom:10px}
+.oracle-conf-bar{height:4px;border-radius:2px;background:var(--surface2);overflow:hidden}
+.oracle-conf-fill{height:100%;border-radius:2px;background:var(--accent)}
+.oracle-conf-label{font-size:11px;color:var(--muted);margin-top:5px}
+
+/* ═══ SHAKEDOWN BURST ═══ */
+.shake-burst{position:fixed;inset:0;pointer-events:none;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;background:rgba(0,0,0,.25)}
+.shake-burst.visible{opacity:1}
+.shake-burst-text{font-family:'Barlow Condensed',sans-serif;font-size:62px;font-weight:800;color:#fff;text-transform:uppercase;text-shadow:0 0 30px var(--accent),0 0 80px rgba(127,119,221,.7);animation:shakePop .5s cubic-bezier(.34,1.56,.64,1) both;letter-spacing:3px;text-align:center;line-height:1.1}
+.shake-burst-sub{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1.5px;animation:shakePop .5s .1s cubic-bezier(.34,1.56,.64,1) both;margin-top:8px}
+@keyframes shakePop{from{opacity:0;transform:scale(.3) rotate(-15deg)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -673,6 +724,7 @@ select option{background:#1e1e1e}
     </div>
   </div>
   <div id="streak-banner-area"></div>
+  <div id="reaper-area"></div>
   <div id="plateau-banner-area"></div>
   <div id="comp-countdown-area"></div>
   <div id="otd-section"></div>
@@ -765,6 +817,7 @@ select option{background:#1e1e1e}
     <div class="chart-card"><div class="chart-card-title">Per gym</div><div id="stats-gyms"><div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div></div></div>
     <div id="grade-norm-section"></div>
     <div id="weakness-section"></div>
+    <div id="oracle-section"></div>
     <div id="rival-section"></div>
   </div>
 </div>
@@ -1370,6 +1423,7 @@ function confirmNavLeave(){
   document.getElementById('inp-note').value='';
   currentFeel=null;
   document.querySelectorAll('.feel-btn').forEach(b=>b.classList.remove('selected'));
+  applyVibe(null);
   const target=pendingNavTarget;pendingNavTarget=null;
   showPage(target);
 }
@@ -1479,6 +1533,7 @@ function renderFeed(){
   renderPlateauBanner();
   renderCompCountdown();
   renderOnThisDay();
+  renderStreakReaper();
   renderNudges();
 
   // Sync gym filter options with sessions
@@ -1545,6 +1600,9 @@ function renderFeed(){
         </div>
         <div style="display:flex;align-items:flex-start;gap:4px">
           <div style="text-align:right;margin-right:8px"><div class="activity-max">${mg?mg.grade:'—'}</div><div class="activity-max-label">max</div></div>
+          <button class="btn-edit-session" onclick="replaySession(${s.id})" title="Sessie replay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
           <button class="btn-edit-session" onclick="repeatSession(${s.id})" title="Herhaal sessie">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
@@ -1784,6 +1842,7 @@ function saveSession(){
   editMode=false;editSessionId=null;
   currentFeel=null;
   document.querySelectorAll('.feel-btn').forEach(b=>b.classList.remove('selected'));
+  applyVibe(null);
   document.querySelector('#page-log .page-title').textContent='Nieuwe sessie';
   document.querySelector('#page-log .btn-save').textContent='Sessie opslaan';
   sessions.sort((a,b)=>a.date.localeCompare(b.date));
@@ -2077,6 +2136,7 @@ function setFeel(val){
   currentFeel=currentFeel===val?null:val;
   document.querySelectorAll('.feel-btn').forEach((b,i)=>b.classList.toggle('selected',i===currentFeel));
   haptic(6);
+  applyVibe(currentFeel);
 }
 
 /* ══════════════════════════════════════════
@@ -2311,6 +2371,7 @@ function renderTLI(){
 function renderStats(){
   renderInsights();
   renderHeatmap();
+  renderGradeOracle();
 
   const pt=getPR('top'),pf=getPR('flash');
   document.getElementById('pr-top').textContent=pt?pt.grade:'—';document.getElementById('pr-top-date').textContent=pt?fmtDate(pt.date):'';
@@ -4327,6 +4388,193 @@ function viewProjectSetter(id){
   </div>`;
   document.body.appendChild(ov);
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+}
+
+/* ══════════════════════════════════════════
+   SHAKEDOWN ALERT
+   Detects a hard phone shake while logging and fires a "HYPE SEND!" burst.
+══════════════════════════════════════════ */
+(function initShakedown(){
+  let lastShake=0,lastX=null,lastY=null,lastZ=null;
+  const THRESHOLD=22,COOLDOWN=3000;
+
+  function fireShakedown(){
+    const old=document.getElementById('shake-burst-el');if(old)old.remove();
+    const el=document.createElement('div');el.id='shake-burst-el';el.className='shake-burst';
+    el.innerHTML='<div class="shake-burst-text">HYPE SEND!</div><div class="shake-burst-sub">Geregistreerd 🤘</div>';
+    document.body.appendChild(el);
+    requestAnimationFrame(()=>el.classList.add('visible'));
+    if(navigator.vibrate)navigator.vibrate([60,40,60,40,120]);
+    setTimeout(()=>{el.classList.remove('visible');setTimeout(()=>el.remove(),250)},2300);
+  }
+
+  window.addEventListener('devicemotion',e=>{
+    const acc=e.accelerationIncludingGravity;if(!acc)return;
+    const {x,y,z}=acc;
+    if(lastX===null){lastX=x;lastY=y;lastZ=z;return}
+    const delta=Math.abs(x-lastX)+Math.abs(y-lastY)+Math.abs(z-lastZ);
+    lastX=x;lastY=y;lastZ=z;
+    const now=Date.now();
+    if(delta>THRESHOLD&&now-lastShake>COOLDOWN){
+      lastShake=now;
+      const onLog=document.getElementById('page-log')?.classList.contains('active');
+      const hasRoutes=document.querySelectorAll('#route-cards .route-card').length>0;
+      if(onLog&&hasRoutes)fireShakedown();
+    }
+  },{passive:true});
+
+  // Also expose a manual trigger for testing on desktop
+  window.triggerShakedown=fireShakedown;
+})();
+
+/* ══════════════════════════════════════════
+   SESSION REPLAY
+   Animates a past session's routes one-by-one like a race results ticker.
+══════════════════════════════════════════ */
+function replaySession(id){
+  const s=sessions.find(x=>x.id===id);if(!s)return;
+  const resultColors={top:'var(--success)',flash:'var(--flash)',poging:'var(--attempt)'};
+  const resultLabels={top:'Top',flash:'Flash',poging:'Poging'};
+  const rows=s.routes.map((r,i)=>{
+    const gc=GRADE_COLORS[gi(r.grade)]||'#555';
+    const rc=resultColors[r.result]||'var(--muted)';
+    return`<div class="replay-route-row" id="rpr-${i}">
+      <div class="replay-route-idx">${i+1}</div>
+      <div class="replay-route-dot" style="background:${gc}"></div>
+      <div class="replay-route-grade" style="color:${gc}">${esc(r.grade)}</div>
+      <div class="replay-route-meta">
+        <div class="replay-route-badge" style="color:${rc};background:${rc.replace('var(','').replace(')','').includes('#')?rc+'22':'rgba(127,119,221,.15)'};">${resultLabels[r.result]||r.result}</div>
+        ${r.type?`<div class="replay-route-type">${esc(r.type)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const ov=document.createElement('div');ov.className='replay-overlay';
+  ov.innerHTML=`
+    <div class="replay-header">
+      <div>
+        <div class="replay-gym">${esc(s.gym||'Sessie')}</div>
+        <div class="replay-date">${fmtDate(s.date)} &middot; ${s.routes.length} routes</div>
+      </div>
+      <button class="btn-filter-clear" onclick="this.closest('.replay-overlay').remove()">✕ Sluiten</button>
+    </div>
+    <div class="replay-body">${rows}</div>
+    <div class="replay-footer">
+      <button class="btn-save" style="flex:1;padding:14px;font-size:16px" onclick="this.closest('.replay-overlay').remove()">Klaar</button>
+    </div>`;
+  document.body.appendChild(ov);
+
+  s.routes.forEach((_,i)=>{
+    setTimeout(()=>{
+      const row=document.getElementById('rpr-'+i);
+      if(row){row.classList.add('appeared');if(navigator.vibrate)navigator.vibrate(4);}
+    },i*380+300);
+  });
+}
+
+/* ══════════════════════════════════════════
+   VIBE MODE
+   Tints the log page header based on the selected feel rating.
+══════════════════════════════════════════ */
+function applyVibe(feel){
+  const header=document.querySelector('#page-log .page-header');if(!header)return;
+  header.classList.remove('vibe-0','vibe-1','vibe-2','vibe-3');
+  if(feel!=null)header.classList.add('vibe-'+feel);
+}
+
+/* ══════════════════════════════════════════
+   STREAK REAPER
+   Haunts the home feed if the user hasn't climbed in 7+ days.
+══════════════════════════════════════════ */
+function renderStreakReaper(){
+  const el=document.getElementById('reaper-area');if(!el)return;
+  if(!sessions.length){el.innerHTML='';return}
+  const lastDate=sessions.reduce((b,s)=>s.date>b?s.date:b,'');
+  const today=new Date().toISOString().split('T')[0];
+  const daysSince=Math.floor((new Date(today)-new Date(lastDate))/86400000);
+  if(daysSince<7){el.innerHTML='';return}
+  const msgs=[
+    {main:'De reaper is wakker…',sub:`${daysSince} dagen geen sessie. Hij wacht op je.`},
+    {main:'Kijk achterom…',sub:`${daysSince} dagen geen greep aangeraakt. De reaper is ongeduldig.`},
+    {main:'Jij. Kom terug.',sub:`${daysSince} dagen weg — de reaper heeft je bijna te pakken.`},
+  ];
+  const m=msgs[Math.floor(daysSince/7)%msgs.length];
+  el.innerHTML=`<div class="reaper-banner">
+    <div class="reaper-icon">💀</div>
+    <div>
+      <div class="reaper-text-main">${esc(m.main)}</div>
+      <div class="reaper-text-sub">${esc(m.sub)}</div>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   GRADE ORACLE
+   Linear regression on first-send dates per grade to predict the next grade.
+══════════════════════════════════════════ */
+function renderGradeOracle(){
+  const el=document.getElementById('oracle-section');if(!el)return;
+  const firstSend={};
+  [...sessions].sort((a,b)=>a.date.localeCompare(b.date)).forEach(s=>{
+    s.routes.forEach(r=>{
+      const idx=gi(r.grade);
+      if((r.result==='top'||r.result==='flash')&&!(idx in firstSend))
+        firstSend[idx]={date:s.date,idx};
+    });
+  });
+  const points=Object.values(firstSend).sort((a,b)=>a.idx-b.idx);
+  if(points.length<3){el.innerHTML='';return}
+
+  const epoch=new Date(points[0].date).getTime();
+  const data=points.map(p=>({x:(new Date(p.date).getTime()-epoch)/86400000,y:p.idx}));
+
+  const n=data.length;
+  const sumX=data.reduce((a,p)=>a+p.x,0),sumY=data.reduce((a,p)=>a+p.y,0);
+  const sumXY=data.reduce((a,p)=>a+p.x*p.y,0),sumX2=data.reduce((a,p)=>a+p.x*p.x,0);
+  const denom=n*sumX2-sumX*sumX;
+  if(!denom||denom===0){el.innerHTML='';return}
+  const m=(n*sumXY-sumX*sumY)/denom;
+  const b=(sumY-m*sumX)/n;
+  if(m<=0){el.innerHTML='<div class="oracle-card"><div class="oracle-eyebrow">🔮 Grade Oracle</div><div style="font-size:13px;color:var(--muted)">Nog niet genoeg progressie om te voorspellen.</div></div>';return}
+
+  const maxSent=Math.max(...points.map(p=>p.idx));
+  const nextIdx=maxSent+1;
+  if(nextIdx>=GRADES.length){
+    el.innerHTML=`<div class="oracle-card"><div class="oracle-eyebrow">🔮 Grade Oracle</div><div style="font-size:14px;color:var(--accent2)">Geen hogere graden — je hebt de top bereikt!</div></div>`;
+    return;
+  }
+
+  const predDays=(nextIdx-b)/m;
+  const predDate=new Date(epoch+predDays*86400000);
+  const today=new Date();today.setHours(0,0,0,0);
+  const daysOut=Math.round((predDate-today)/86400000);
+
+  const yMean=sumY/n;
+  const ssTot=data.reduce((a,p)=>a+(p.y-yMean)**2,0);
+  const ssRes=data.reduce((a,p)=>a+(p.y-(m*p.x+b))**2,0);
+  const conf=ssTot>0?Math.round(Math.max(0,Math.min(1,1-ssRes/ssTot))*100):0;
+  const dateStr=predDate.toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+
+  if(daysOut<0){
+    el.innerHTML=`<div class="oracle-card">
+      <div class="oracle-eyebrow">🔮 Grade Oracle &mdash; Volgende graad: <span style="color:var(--text)">${esc(GRADES[nextIdx])}</span></div>
+      <div class="oracle-row"><div class="oracle-grade">${esc(GRADES[nextIdx])}</div><div class="oracle-days" style="color:var(--danger)">Je had dit<br><strong>al moeten sturen!</strong></div></div>
+      <div class="oracle-date-str">${Math.abs(daysOut)} dag${Math.abs(daysOut)!==1?'en':''} achter op schema 👀</div>
+      <div class="oracle-conf-bar"><div class="oracle-conf-fill" style="width:${conf}%"></div></div>
+      <div class="oracle-conf-label">Betrouwbaarheid: ${conf}%</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML=`<div class="oracle-card">
+    <div class="oracle-eyebrow">🔮 Grade Oracle &mdash; Volgende graad</div>
+    <div class="oracle-row">
+      <div class="oracle-grade">${esc(GRADES[nextIdx])}</div>
+      <div class="oracle-days">verwacht over<br><strong style="color:var(--text);font-size:18px">${daysOut} dag${daysOut!==1?'en':''}</strong></div>
+    </div>
+    <div class="oracle-date-str">Voorspelde datum: ${dateStr}</div>
+    <div class="oracle-conf-bar"><div class="oracle-conf-fill" style="width:${conf}%"></div></div>
+    <div class="oracle-conf-label">Betrouwbaarheid: ${conf}% (gebaseerd op ${n} gesendte graden)</div>
+  </div>`;
 }
 
 /* ── Bootstrap: show profile screen before anything else ── */
