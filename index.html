@@ -519,6 +519,40 @@ select option{background:#1e1e1e}
 .coach-advice-tag{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.8px;border:.5px solid;border-radius:20px;padding:3px 10px}
 .coach-advice-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
 .coach-advice-body{font-size:13px;color:var(--muted);line-height:1.5}
+.coach-train-today{border-radius:16px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;gap:14px;animation:slideUp .2s ease both}
+.coach-train-answer{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;line-height:1.1;margin-bottom:3px}
+.coach-train-reason{font-size:12px;color:var(--muted);line-height:1.4}
+.coach-train-icon{font-size:34px;line-height:1;flex-shrink:0}
+.coach-gauge-card{background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.coach-gauge-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.coach-gauge-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.coach-gauge-pct{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700}
+.coach-gauge-track{height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.coach-gauge-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.coach-gauge-sub{font-size:11px;color:var(--muted);margin-top:6px}
+.coach-week-plan{background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.coach-week-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.coach-week-grid{display:flex;gap:3px}
+.coach-week-day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.coach-week-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;border:.5px solid;flex-shrink:0}
+.coach-week-name{font-size:9px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.coach-week-lbl{font-size:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.2px;text-align:center;line-height:1.2}
+.coach-focus-card{border-radius:14px;padding:16px;margin-bottom:12px;border:.5px solid rgba(127,119,221,.4);background:linear-gradient(135deg,rgba(127,119,221,.15),rgba(127,119,221,.04))}
+.coach-focus-label{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin-bottom:6px}
+.coach-focus-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
+.coach-focus-body{font-size:13px;color:var(--muted);line-height:1.5}
+.coach-progression{background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.coach-prog-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.coach-prog-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.coach-prog-grade{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900}
+.coach-prog-arrow{font-size:20px;color:var(--muted)}
+.coach-prog-sub{font-size:12px;color:var(--muted);line-height:1.4}
+.coach-insights{background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.coach-insights-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.coach-insight-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:.5px solid var(--border)}
+.coach-insight-item:last-child{border-bottom:none;padding-bottom:0}
+.coach-insight-emoji{font-size:17px;line-height:1.35;flex-shrink:0}
+.coach-insight-text{font-size:13px;color:var(--muted);line-height:1.4}
 
 /* HEAT BAR */
 .heat-bar{display:flex;gap:2px;padding:0 16px 12px}
@@ -3298,6 +3332,168 @@ function renderQuietTime(){
 /* ══════════════════════════════════════════
    AI TRAININGSCOACH
 ══════════════════════════════════════════ */
+function computeTrainToday(){
+  if(sessions.length<2)return null;
+  const today=new Date().toISOString().split('T')[0];
+  const sorted=[...sessions].sort((a,b)=>b.date.localeCompare(a.date));
+  const daysSinceLast=Math.round((new Date(today+'T00:00:00')-new Date(sorted[0].date+'T00:00:00'))/86400000);
+  const{cur:curTLI,avg:avg4}=computeTLIRatio();
+  const tliRatio=avg4>0?curTLI/avg4:1;
+  const recentCnt=sorted.filter(s=>Math.round((new Date(today+'T00:00:00')-new Date(s.date+'T00:00:00'))/86400000)<=4).length;
+  if(daysSinceLast===0)return{train:false,icon:'✋',answer:'Rust vandaag',reason:'Je hebt al geklommen vandaag — geef je vingers de rest van de dag.'};
+  if(recentCnt>=3)return{train:false,icon:'🛌',answer:'Rust vandaag',reason:`${recentCnt} sessies in 4 dagen is veel. Plan een rustdag voor optimale progressie.`};
+  if(daysSinceLast===1&&tliRatio>1.5)return{train:false,icon:'😴',answer:'Rust vandaag',reason:'Gisteren hard getraind en hoge weekbelasting — rust of doe mobiliteit.'};
+  if(daysSinceLast>=3&&tliRatio<=1.3)return{train:true,icon:'💪',answer:'Klim vandaag!',reason:`${daysSinceLast} dagen rust — je vingers zijn fris. Perfecte dag om te klimmen.`};
+  if(daysSinceLast>=2)return{train:true,icon:'🧗',answer:'Klim vandaag!',reason:'2 dagen rust is voldoende herstel. Go!'};
+  if(daysSinceLast===1&&tliRatio<=1.2)return{train:true,icon:'⚡',answer:'Klim vandaag!',reason:'Belasting is normaal. Voel je goed? Ga ervoor!'};
+  return{train:true,icon:'🧗',answer:'Klim vandaag!',reason:'Geen herstelwaarschuwingen — training is groen.'};
+}
+
+function computeFingerLoad(){
+  const today=new Date().toISOString().split('T')[0];
+  let score=0;
+  sessions.forEach(s=>{
+    const d=Math.round((new Date(today+'T00:00:00')-new Date(s.date+'T00:00:00'))/86400000);
+    if(d>=7)return;
+    const routeLoad=Math.min((s.routes||[]).length*1.8,22);
+    score+=routeLoad*Math.max(1-d*0.12,0.25);
+  });
+  hangSessions.forEach(h=>{
+    if(!h.date)return;
+    const d=Math.round((new Date(today+'T00:00:00')-new Date(h.date+'T00:00:00'))/86400000);
+    if(d>=7)return;
+    score+=(h.sets||[]).length*3.5*Math.max(1-d*0.12,0.25);
+  });
+  return Math.min(Math.round(score),100);
+}
+
+function computeWeekPlan(){
+  const today=new Date();
+  const todayStr=today.toISOString().split('T')[0];
+  const recentCnt=sessions.filter(s=>Math.round((new Date(todayStr+'T00:00:00')-new Date(s.date+'T00:00:00'))/86400000)<28).length;
+  const weeklyFreq=recentCnt/4;
+  const hasHang=hangSessions.length>0;
+  const dayAbbr=['Zo','Ma','Di','Wo','Do','Vr','Za'];
+  let pattern;
+  if(weeklyFreq>=3)pattern=['climb','hang','rest','climb','hang','rest','climb'];
+  else if(weeklyFreq>=2)pattern=['climb','rest','hang','rest','climb','rest','rest'];
+  else pattern=['climb','rest','rest','hang','rest','rest','climb'];
+  const plan=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const ds=d.toISOString().split('T')[0];
+    const hasDone=sessions.some(s=>s.date===ds);
+    const dayName=i===0?'Vandaag':dayAbbr[d.getDay()];
+    if(hasDone){plan.push({day:dayName,type:'done',label:'Gedaan',color:'var(--success)'});continue;}
+    const t=pattern[i%7];
+    if(t==='climb')plan.push({day:dayName,type:'climb',label:'Klimmen',color:'var(--accent)'});
+    else if(t==='hang'&&hasHang)plan.push({day:dayName,type:'hang',label:'Hangboard',color:'var(--hang)'});
+    else plan.push({day:dayName,type:'rest',label:'Rust',color:'var(--muted)'});
+  }
+  return plan;
+}
+
+function computeGradeProgression(){
+  const ar=allRoutes();
+  const sentR=ar.filter(r=>r.result==='top'||r.result==='flash');
+  if(sentR.length<3)return null;
+  const firstDate={};
+  sentR.forEach(r=>{const g=gi(r.grade);if(g<0)return;if(!firstDate[g]||r.date<firstDate[g])firstDate[g]=r.date;});
+  const entries=Object.entries(firstDate).sort((a,b)=>Number(a[0])-Number(b[0]));
+  if(entries.length<2)return null;
+  const gaps=[];
+  for(let i=1;i<entries.length;i++){
+    const d=Math.round((new Date(entries[i][1]+'T00:00:00')-new Date(entries[i-1][1]+'T00:00:00'))/86400000);
+    if(d>0&&d<365)gaps.push(d);
+  }
+  if(!gaps.length)return null;
+  const recent=gaps.slice(-3);
+  const avgDays=Math.round(recent.reduce((a,b)=>a+b,0)/recent.length);
+  const maxG=Math.max(...Object.keys(firstDate).map(Number));
+  if(maxG>=GRADES.length-1)return null;
+  const prGrade=GRADES[maxG];
+  const nextGrade=GRADES[maxG+1];
+  const today=new Date().toISOString().split('T')[0];
+  const daysSincePR=Math.round((new Date(today+'T00:00:00')-new Date(firstDate[maxG]+'T00:00:00'))/86400000);
+  const daysLeft=Math.max(avgDays-daysSincePR,0);
+  return{prGrade,nextGrade,avgDays,weeksLeft:Math.round(daysLeft/7),daysSincePR};
+}
+
+function computeTodayFocus(){
+  const ar=allRoutes();
+  if(ar.length<10)return null;
+  const typeS={},typeT={};
+  ar.forEach(r=>{if(!r.type)return;typeT[r.type]=(typeT[r.type]||0)+1;if(r.result!=='poging')typeS[r.type]=(typeS[r.type]||0)+1;});
+  const typeKeys=Object.keys(typeT).filter(t=>typeT[t]>=4);
+  if(typeKeys.length>=2){
+    const worst=typeKeys.reduce((a,b)=>((typeS[b]||0)/typeT[b])<((typeS[a]||0)/typeT[a])?b:a);
+    const best=typeKeys.reduce((a,b)=>((typeS[b]||0)/typeT[b])>((typeS[a]||0)/typeT[a])?b:a);
+    const wPct=Math.round(((typeS[worst]||0)/typeT[worst])*100);
+    const bPct=Math.round(((typeS[best]||0)/typeT[best])*100);
+    if(bPct-wPct>=15)return{icon:'🎯',title:`Focus: ${esc(worst)}`,body:`Je slaagkans op ${esc(worst)} is ${wPct}% — kies bewust 3 ${esc(worst).toLowerCase()}-routes en analyseer de moves voor je pakt. ${esc(best)} lukken al goed (${bPct}%).`};
+  }
+  if(hangSessions.length>=3){
+    const allSets=hangSessions.flatMap(h=>h.sets||[]);
+    const gT={},gTime={};
+    allSets.forEach(s=>{if(!s.grip)return;gT[s.grip]=(gT[s.grip]||0)+1;gTime[s.grip]=(gTime[s.grip]||0)+(Number(s.time)||0);});
+    const grips=Object.keys(gT).filter(g=>gT[g]>=3);
+    if(grips.length>=2){
+      const weak=grips.reduce((a,b)=>(gTime[b]/gT[b])<(gTime[a]/gT[a])?b:a);
+      const wt=Math.round(gTime[weak]/gT[weak]);
+      return{icon:'💪',title:`Focus: ${esc(weak)}`,body:`${esc(weak)} is je zwakste grip (gem. ${wt}s hangtijd). Voeg 2 extra sets toe aan je volgende hangboardsessie.`};
+    }
+  }
+  const sentR=ar.filter(r=>r.result==='top'||r.result==='flash');
+  if(sentR.length>=3){
+    const prGrade=sentR.reduce((b,r)=>gi(r.grade)>gi(b.grade)?r:b,sentR[0]).grade;
+    const nextG=GRADES[Math.min(gi(prGrade)+1,GRADES.length-1)];
+    if(nextG!==prGrade)return{icon:'🚀',title:`Probeer vandaag ${esc(nextG)}`,body:`Je PR staat op ${esc(prGrade)}. Zoek een ${esc(nextG)}-route die bij jouw stijl past en analyseer hem goed. Eén serieuze poging per sessie is genoeg.`};
+  }
+  return null;
+}
+
+function computeCoachInsights(){
+  const insights=[];
+  if(sessions.length<10)return insights;
+  const today=new Date().toISOString().split('T')[0];
+  const dayNames=['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+  const dayS={},dayC={};
+  sessions.forEach(s=>{
+    const d=new Date(s.date+'T00:00:00').getDay();
+    const total=(s.routes||[]).length;if(!total)return;
+    const sent=(s.routes||[]).filter(r=>r.result!=='poging').length;
+    dayS[d]=(dayS[d]||0)+sent/total;dayC[d]=(dayC[d]||0)+1;
+  });
+  const daysWithData=Object.keys(dayC).filter(d=>dayC[d]>=2);
+  if(daysWithData.length>=3){
+    const best=daysWithData.reduce((a,b)=>(dayS[b]/dayC[b])>(dayS[a]/dayC[a])?b:a);
+    insights.push({icon:'📅',text:`Je klimt het beste op ${dayNames[best]} (${Math.round(dayS[best]/dayC[best]*100)}% slagingsrate)`});
+  }
+  const sorted=[...sessions].sort((a,b)=>a.date.localeCompare(b.date));
+  const restBuckets={1:[],2:[],3:[]};
+  for(let i=1;i<sorted.length;i++){
+    const gap=Math.round((new Date(sorted[i].date+'T00:00:00')-new Date(sorted[i-1].date+'T00:00:00'))/86400000);
+    if(gap<1||gap>5)continue;
+    const total=(sorted[i].routes||[]).length;if(!total)continue;
+    const sent=(sorted[i].routes||[]).filter(r=>r.result!=='poging').length;
+    restBuckets[Math.min(gap,3)].push(sent/total);
+  }
+  const restAvg={};
+  [1,2,3].forEach(k=>{if(restBuckets[k].length>=2)restAvg[k]=restBuckets[k].reduce((a,b)=>a+b,0)/restBuckets[k].length;});
+  const rKeys=Object.keys(restAvg);
+  if(rKeys.length>=2){
+    const bestR=rKeys.reduce((a,b)=>restAvg[b]>restAvg[a]?b:a);
+    const lbl=bestR==1?'1 rustdag':bestR==2?'2 rustdagen':'3+ rustdagen';
+    insights.push({icon:'😴',text:`Na ${lbl} heb je de hoogste slagingsrate (${Math.round(restAvg[bestR]*100)}%)`});
+  }
+  const ar=allRoutes();
+  const totalSent=ar.filter(r=>r.result!=='poging').length;
+  const totalFlash=ar.filter(r=>r.result==='flash').length;
+  if(totalSent>0)insights.push({icon:'🏆',text:`${totalSent} routes geklommen, waarvan ${totalFlash} geflasht`});
+  if(sessions.length>=5)insights.push({icon:'📊',text:`Gemiddeld ${Math.round(ar.length/sessions.length)} routes per sessie`});
+  return insights;
+}
+
 function computeCoachAdvice(){
   const today=new Date().toISOString().split('T')[0];
   const ar=allRoutes();
@@ -3445,10 +3641,78 @@ function renderCoach(){
     good:'rgba(76,175,80,.4)',rest:'rgba(229,57,53,.4)',push:'rgba(127,119,221,.4)',
     strength:'rgba(233,30,140,.4)',start:'rgba(127,119,221,.3)',warning:'rgba(255,152,0,.4)'
   };
+
+  // --- Train Today ---
+  let trainHtml='';
+  if(sessions.length>=2){
+    const tt=computeTrainToday();
+    if(tt){
+      const tc=tt.train?'var(--success)':'var(--danger)';
+      const tbg=tt.train?'linear-gradient(135deg,rgba(76,175,80,.18),rgba(76,175,80,.05))':'linear-gradient(135deg,rgba(229,57,53,.18),rgba(229,57,53,.05))';
+      const tb=tt.train?'rgba(76,175,80,.4)':'rgba(229,57,53,.4)';
+      trainHtml=`<div class="coach-train-today" style="background:${tbg};border:.5px solid ${tb}">
+        <div class="coach-train-icon">${tt.icon}</div>
+        <div style="flex:1">
+          <div style="font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:3px">Train vandaag?</div>
+          <div class="coach-train-answer" style="color:${tc}">${tt.answer}</div>
+          <div class="coach-train-reason">${tt.reason}</div>
+        </div>
+      </div>`;
+    }
+  }
+
+  // --- Status card ---
   const statusHtml=`<div class="coach-status-card" style="background:${gradients[status.level]||gradients.good};border-color:${borders[status.level]||borders.good}">
     <div class="coach-status-icon">${status.icon}</div>
     <div><div class="coach-status-title" style="color:${status.color}">${status.title}</div><div class="coach-status-sub">${status.sub}</div></div>
   </div>`;
+
+  // --- Finger load gauge ---
+  let gaugeHtml='';
+  if(sessions.length>=1){
+    const load=computeFingerLoad();
+    const gc=load<40?'var(--success)':load<70?'#ff9800':'var(--danger)';
+    const gl=load<40?'Vingers zijn fris en hersteld':load<70?'Matige belasting — herstel aanbevolen':'Hoge belasting — plan een rustdag';
+    gaugeHtml=`<div class="coach-gauge-card">
+      <div class="coach-gauge-header">
+        <span class="coach-gauge-label">🫀 Vingerbelasting</span>
+        <span class="coach-gauge-pct" style="color:${gc}">${load}%</span>
+      </div>
+      <div class="coach-gauge-track"><div class="coach-gauge-fill" style="width:${load}%;background:${gc}"></div></div>
+      <div class="coach-gauge-sub">${gl}</div>
+    </div>`;
+  }
+
+  // --- Week plan ---
+  let weekHtml='';
+  if(sessions.length>=2){
+    const plan=computeWeekPlan();
+    const icons={climb:'🧗',hang:'💪',rest:'😴',done:'✅'};
+    const dbg={climb:'rgba(127,119,221,.2)',hang:'rgba(233,30,140,.2)',rest:'rgba(255,255,255,.06)',done:'rgba(76,175,80,.2)'};
+    const dbd={climb:'rgba(127,119,221,.5)',hang:'rgba(233,30,140,.5)',rest:'var(--border)',done:'rgba(76,175,80,.5)'};
+    const days=plan.map(p=>`<div class="coach-week-day">
+      <div class="coach-week-dot" style="background:${dbg[p.type]||dbg.rest};border-color:${dbd[p.type]||dbd.rest}">${icons[p.type]||'😴'}</div>
+      <div class="coach-week-name">${p.day}</div>
+      <div class="coach-week-lbl" style="color:${p.color}">${p.label}</div>
+    </div>`).join('');
+    weekHtml=`<div class="coach-week-plan">
+      <div class="coach-week-title">📅 Weekplan</div>
+      <div class="coach-week-grid">${days}</div>
+    </div>`;
+  }
+
+  // --- Today's focus ---
+  let focusHtml='';
+  if(sessions.length>=3){
+    const focus=computeTodayFocus();
+    if(focus)focusHtml=`<div class="coach-focus-card">
+      <div class="coach-focus-label">${focus.icon} Focuspunt voor vandaag</div>
+      <div class="coach-focus-title">${focus.title}</div>
+      <div class="coach-focus-body">${focus.body}</div>
+    </div>`;
+  }
+
+  // --- Advice cards ---
   const adviceHtml=advice.map(a=>`<div class="coach-advice-card">
     <div class="coach-advice-header">
       <span class="coach-advice-icon">${a.icon}</span>
@@ -3457,7 +3721,39 @@ function renderCoach(){
     <div class="coach-advice-title">${a.title}</div>
     <div class="coach-advice-body">${a.body}</div>
   </div>`).join('');
-  el.innerHTML=statusHtml+(advice.length?`<div class="section-title" style="padding:16px 0 10px">Advies voor jou</div>${adviceHtml}`:'');
+
+  // --- Grade progression ---
+  let progHtml='';
+  if(sessions.length>=5){
+    const prog=computeGradeProgression();
+    if(prog){
+      const{prGrade,nextGrade,weeksLeft,daysSincePR}=prog;
+      const sub=weeksLeft===0?`Al ${daysSincePR} dagen op ${esc(prGrade)} — de doorbraak kan nu elk moment komen!`:`Op jouw progressietempo bereik je ${esc(nextGrade)} over ~${weeksLeft} week${weeksLeft!==1?'en':''}`;
+      progHtml=`<div class="coach-progression">
+        <div class="coach-prog-label">📈 Graadprogressie</div>
+        <div class="coach-prog-row">
+          <span class="coach-prog-grade" style="color:var(--accent)">${esc(prGrade)}</span>
+          <span class="coach-prog-arrow">→</span>
+          <span class="coach-prog-grade" style="color:rgba(255,255,255,.35)">${esc(nextGrade)}</span>
+        </div>
+        <div class="coach-prog-sub">${sub}</div>
+      </div>`;
+    }
+  }
+
+  // --- Personal insights ---
+  let insightsHtml='';
+  if(sessions.length>=10){
+    const ins=computeCoachInsights();
+    if(ins.length)insightsHtml=`<div class="coach-insights">
+      <div class="coach-insights-title">✨ Jouw statistieken</div>
+      ${ins.map(i=>`<div class="coach-insight-item"><span class="coach-insight-emoji">${i.icon}</span><span class="coach-insight-text">${i.text}</span></div>`).join('')}
+    </div>`;
+  }
+
+  el.innerHTML=trainHtml+statusHtml+gaugeHtml+weekHtml+focusHtml
+    +(advice.length?`<div class="section-title" style="padding:16px 0 10px">Advies voor jou</div>${adviceHtml}`:'')
+    +progHtml+insightsHtml;
 }
 
 /* ══════════════════════════════════════════
