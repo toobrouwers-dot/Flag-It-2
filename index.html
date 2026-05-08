@@ -564,6 +564,51 @@ select option{background:#1e1e1e}
 .plateau-text-main{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--accent2);text-transform:uppercase}
 .plateau-text-sub{font-size:12px;color:var(--muted);margin-top:1px}
 
+/* WEAKNESS DETECTOR */
+.weakness-grade-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:.5px solid var(--border)}
+.weakness-grade-row:last-child{border-bottom:none;padding-bottom:0}
+.weakness-type-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:.5px solid var(--border)}
+.weakness-type-row:last-child{border-bottom:none;padding-bottom:0}
+
+/* RIVAL MODE */
+.rival-header-names{display:flex;justify-content:space-between;padding:0 2px;margin-bottom:10px}
+.rival-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+.rival-row{display:flex;align-items:center;padding:9px 0;border-bottom:.5px solid var(--border)}
+.rival-row:last-child{border-bottom:none;padding-bottom:0}
+.rival-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;line-height:1;flex:1}
+.rival-label{font-size:11px;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.5px;flex:0 0 80px}
+
+/* REST COUNTDOWN TIMER */
+.rest-cd-wrap{background:rgba(233,30,140,.06);border:.5px solid rgba(233,30,140,.2);border-radius:14px;padding:16px;margin-bottom:20px}
+.rest-cd-display{font-family:'Barlow Condensed',sans-serif;font-size:68px;font-weight:800;color:var(--hang);line-height:1;text-align:center;letter-spacing:2px;padding:6px 0 2px;font-variant-numeric:tabular-nums;transition:color .2s}
+.rest-cd-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:10px}
+.rest-cd-presets{display:flex;gap:5px;margin-bottom:10px}
+.rest-preset-btn{flex:1;padding:8px 2px;border-radius:8px;border:.5px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.3px}
+.rest-preset-btn:active,.rest-preset-btn.selected{background:rgba(233,30,140,.18);border-color:var(--hang);color:var(--hang)}
+.btn-rest-start{flex:2;padding:13px;background:rgba(233,30,140,.12);border:.5px solid rgba(233,30,140,.4);border-radius:12px;color:var(--hang);font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s}
+.btn-rest-start.running{background:rgba(229,57,53,.15);border-color:var(--danger);color:var(--danger)}
+.btn-rest-stop{flex:1;padding:13px;background:var(--surface);border:.5px solid var(--border);border-radius:12px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+
+/* ROUTE SETTER */
+.setter-angle-btns{display:flex;gap:6px;margin-bottom:12px}
+.setter-angle-btn{flex:1;padding:8px 4px;border-radius:8px;border:.5px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;text-transform:uppercase;letter-spacing:.3px}
+.setter-angle-btn.active{background:rgba(127,119,221,.2);border-color:var(--accent);color:var(--accent)}
+.setter-hold-types{display:flex;gap:6px;margin-bottom:10px}
+.setter-hold-btn{flex:1;padding:8px 4px;border-radius:8px;border:.5px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.setter-hold-btn.active-start{background:rgba(76,175,80,.25);border-color:var(--success);color:var(--success)}
+.setter-hold-btn.active-hand{background:rgba(127,119,221,.25);border-color:var(--accent);color:var(--accent)}
+.setter-hold-btn.active-foot{background:rgba(136,136,136,.25);border-color:#888;color:#ccc}
+.setter-hold-btn.active-top{background:rgba(255,193,7,.25);border-color:var(--flash);color:var(--flash)}
+.setter-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:0 0 12px}
+.setter-cell{height:40px;border-radius:7px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .1s;-webkit-tap-highlight-color:transparent;user-select:none}
+.setter-cell.h-start{background:rgba(76,175,80,.35);border-color:var(--success)}
+.setter-cell.h-hand{background:rgba(127,119,221,.35);border-color:var(--accent)}
+.setter-cell.h-foot{background:rgba(136,136,136,.25);border-color:#888}
+.setter-cell.h-top{background:rgba(255,193,7,.35);border-color:var(--flash)}
+.setter-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.setter-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.setter-leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
 /* PROJECT NUDGE CARDS */
 .proj-nudge-card{margin:0 16px 10px;background:linear-gradient(135deg,rgba(255,193,7,.1),rgba(255,193,7,.03));border:.5px solid rgba(255,193,7,.25);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;animation:slideUp .3s ease both}
 .proj-nudge-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--flash);text-transform:uppercase;letter-spacing:.5px}
@@ -673,7 +718,10 @@ select option{background:#1e1e1e}
       </div>
       <div id="route-cards"></div>
       <div class="sess-stats-bar" id="sess-stats-bar"></div>
-      <button class="btn-add-route" onclick="addRouteCard(getSmartDefaultGrade())">+ Route toevoegen</button>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn-add-route" style="flex:1;margin-bottom:0" onclick="addRouteCard(getSmartDefaultGrade())">+ Route toevoegen</button>
+        <button onclick="openSetterModal()" style="padding:13px 16px;background:none;border:.5px dashed rgba(127,119,221,.4);border-radius:12px;color:var(--accent);font-family:'Barlow',sans-serif;font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0" onmousedown="this.style.background='rgba(127,119,221,.08)'" onmouseup="this.style.background='none'">🏗️ Setter</button>
+      </div>
     </div>
     <button class="btn-save" onclick="saveSession()">Sessie opslaan</button>
   </div>
@@ -705,6 +753,8 @@ select option{background:#1e1e1e}
     <div id="stoke-radar-section"></div>
     <div class="chart-card"><div class="chart-card-title">Per gym</div><div id="stats-gyms"><div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div></div></div>
     <div id="grade-norm-section"></div>
+    <div id="weakness-section"></div>
+    <div id="rival-section"></div>
   </div>
 </div>
 
@@ -785,6 +835,24 @@ select option{background:#1e1e1e}
       <button class="btn-timer-use" id="btn-timer-use" onclick="useTimerValue()"></button>
     </div>
 
+    <!-- Rest Countdown Timer -->
+    <div class="form-section-title" style="padding:0 0 8px">Rusttimer</div>
+    <div class="rest-cd-wrap">
+      <div class="rest-cd-display" id="rest-countdown">1:30</div>
+      <div class="rest-cd-sub" id="rest-cd-sub">Kies rustduur en druk start</div>
+      <div class="rest-cd-presets">
+        <button class="rest-preset-btn" onclick="setRestPreset(30,this)">30s</button>
+        <button class="rest-preset-btn" onclick="setRestPreset(60,this)">1m</button>
+        <button class="rest-preset-btn selected" onclick="setRestPreset(90,this)">1:30</button>
+        <button class="rest-preset-btn" onclick="setRestPreset(120,this)">2m</button>
+        <button class="rest-preset-btn" onclick="setRestPreset(180,this)">3m</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-rest-start" id="btn-rest-timer" onclick="toggleRestTimer()">▶ Start rust</button>
+        <button class="btn-rest-stop" onclick="resetRestTimer()">Reset</button>
+      </div>
+    </div>
+
     <!-- New hang session form -->
     <div class="form-section-title" style="padding:0 0 10px">Nieuwe hangsessie</div>
     <div class="input-row"><div class="field"><label>Datum</label><input type="date" id="hang-date"></div></div>
@@ -818,6 +886,13 @@ select option{background:#1e1e1e}
       <label class="btn-import-label" for="import-file-input">↑ Importeer</label>
       <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="importFile(event)">
     </div>
+    <div class="form-section-title" style="padding:14px 0 10px">Rivaal modus</div>
+    <div style="display:flex;gap:8px;margin-bottom:4px">
+      <label class="btn-export" for="rival-file-input" style="border-color:rgba(233,30,140,.4);color:var(--hang);text-align:center">⚔️ Rivaal importeren</label>
+      <input type="file" id="rival-file-input" accept=".json" style="display:none" onchange="importRival(event)">
+      <button class="btn-export" id="btn-clear-rival" onclick="clearRival()" style="display:none">Wis rivaal</button>
+    </div>
+    <div id="rival-info-bar" style="font-size:12px;color:var(--muted);padding:2px 0 4px"></div>
     <div class="form-section-title" style="padding:20px 0 10px">Profiel</div>
     <div id="profile-mgmt-section"></div>
   </div>
@@ -881,6 +956,9 @@ const GRIPS=['Volgreep','Half-krim','Krim','Sleuf','Mono','Twee-vinger','Pinch',
    STATE
 ══════════════════════════════════════════ */
 let sessions=[],gyms=[],goals=[],hangSessions=[],projects=[],injuries=[],competitions=[],gymResets=[];
+let rivalData=null,rivalName='Rivaal';
+let restPresetSecs=90,restTimerSecs=90,restTimerInterval=null,restTimerRunning=false;
+let setterHolds=[],setterActiveHoldType='hand',setterAngle='Verticaal';
 let activePlan=null;
 let feedTab='feed';
 let chartP=null,chartG=null,chartH=null,tliChart=null,stokeRadarChart=null;
@@ -2276,6 +2354,8 @@ function renderStats(){
     }).join('')
     :'<div style="color:var(--muted);font-size:13px;padding:8px 0">Nog geen sessies</div>';
   renderGradeNorm();
+  renderWeaknessDetector();
+  renderRivalSection();
 }
 
 function showSessionDetailModal(s){
@@ -3770,6 +3850,7 @@ function initApp(profileId){
   pyramidFilter='all';
   // Reset timer
   if(typeof timerRunning!=='undefined'&&timerRunning){clearInterval(timerInterval);timerRunning=false;timerSecs=0}
+  if(restTimerRunning){clearInterval(restTimerInterval);restTimerRunning=false;restTimerSecs=restPresetSecs;}
   // Reset route and hang-set cards
   routeCount=0;document.getElementById('route-cards').innerHTML='';
   hangSetCount=0;document.getElementById('hang-set-cards').innerHTML='';
@@ -3841,6 +3922,300 @@ function initApp(profileId){
     const el=document.getElementById('start-screen');
     if(el)el.remove();
   }
+}
+
+/* ══════════════════════════════════════════
+   WEAKNESS DETECTOR
+══════════════════════════════════════════ */
+function computeWeakness(){
+  const ar=allRoutes();
+  if(ar.length<10)return null;
+  const gradeTotals={},gradeSends={};
+  ar.forEach(r=>{gradeTotals[r.grade]=(gradeTotals[r.grade]||0)+1;if(r.result!=='poging')gradeSends[r.grade]=(gradeSends[r.grade]||0)+1});
+  const gradeWeak=GRADES.filter(g=>{const t=gradeTotals[g]||0;return t>=3&&((gradeSends[g]||0)/t)<0.5;})
+    .sort((a,b)=>((gradeSends[a]||0)/(gradeTotals[a]||1))-((gradeSends[b]||0)/(gradeTotals[b]||1)))
+    .slice(0,4);
+  const typeTotal={},typeSend={};
+  ar.forEach(r=>{if(!r.type)return;typeTotal[r.type]=(typeTotal[r.type]||0)+1;if(r.result!=='poging')typeSend[r.type]=(typeSend[r.type]||0)+1});
+  const typeKeys=Object.keys(typeTotal).filter(t=>typeTotal[t]>=5);
+  const weakTypes=typeKeys.length>=2
+    ?[...typeKeys].sort((a,b)=>((typeSend[a]||0)/typeTotal[a])-((typeSend[b]||0)/typeTotal[b])).slice(0,2)
+    :[];
+  return{gradeWeak,weakTypes,gradeTotals,gradeSends,typeTotal,typeSend};
+}
+
+function renderWeaknessDetector(){
+  const el=document.getElementById('weakness-section');if(!el)return;
+  const w=computeWeakness();
+  if(!w||(!w.gradeWeak.length&&!w.weakTypes.length)){el.innerHTML='';return;}
+  const gradeRows=w.gradeWeak.map(g=>{
+    const total=w.gradeTotals[g]||0,sends=w.gradeSends[g]||0;
+    const pct=Math.round((sends/total)*100);
+    const color=GRADE_COLORS[GRADES.indexOf(g)]||'#777';
+    return`<div class="weakness-grade-row">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;min-width:42px;color:${color}">${g}</div>
+      <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${color};opacity:.75;border-radius:4px"></div></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--danger);min-width:34px;text-align:right">${pct}%</div>
+      <div style="font-size:11px;color:var(--muted);min-width:44px;text-align:right">${sends}/${total}</div>
+    </div>`;
+  }).join('');
+  const typeRows=w.weakTypes.map(t=>{
+    const total=w.typeTotal[t]||0,sends=w.typeSend[t]||0;
+    const pct=Math.round((sends/total)*100);
+    return`<div class="weakness-type-row">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase">${esc(t)}</div>
+      <div style="text-align:right"><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--danger)">${pct}%</div><div style="font-size:11px;color:var(--muted)">${sends}/${total} geslaagd</div></div>
+    </div>`;
+  }).join('');
+  const topG=w.gradeWeak[0],topT=w.weakTypes[0];
+  const tip=topG
+    ?`Graad <strong>${esc(topG)}</strong> slaagt maar ${Math.round(((w.gradeSends[topG]||0)/w.gradeTotals[topG])*100)}% — kies bewust ${topT?`<strong>${esc(topT)}</strong>-`:''}routes op deze graad en analyseer de moves.`
+    :`<strong>${esc(topT)}</strong> is je zwakste type — kies in je volgende sessie bewust ${esc(topT).toLowerCase()}-routes.`;
+  el.innerHTML=`<div class="chart-card" style="margin-bottom:16px">
+    <div class="chart-card-title">🎯 Zwakke plekken</div>
+    ${gradeRows?`<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Graden met ≥3 pogingen maar &lt;50% slagingskans</div>${gradeRows}`:''}
+    ${typeRows?`<div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">Zwakste route-types</div>${typeRows}`:''}
+    <div style="margin-top:12px;padding:10px 12px;background:rgba(127,119,221,.07);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.45">💡 ${tip}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   RIVAL MODE
+══════════════════════════════════════════ */
+function importRival(e){
+  const file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data.sessions)){toast('Ongeldig bestand','#e53935');return;}
+      rivalData=data;
+      rivalName=(data.profile&&data.profile.name)?data.profile.name:'Rivaal';
+      const clearBtn=document.getElementById('btn-clear-rival');if(clearBtn)clearBtn.style.display='';
+      const infoBar=document.getElementById('rival-info-bar');
+      if(infoBar)infoBar.textContent=`⚔️ Rivaal: ${rivalName} · ${data.sessions.length} sessies geïmporteerd`;
+      toast('Rivaal geïmporteerd: '+rivalName+'!','#e91e8c');
+      if(document.getElementById('page-stats').classList.contains('active'))renderRivalSection();
+    }catch(err){toast('Import mislukt — ongeldig JSON','#e53935');}
+  };
+  reader.readAsText(file);
+}
+
+function clearRival(){
+  rivalData=null;rivalName='Rivaal';
+  const clearBtn=document.getElementById('btn-clear-rival');if(clearBtn)clearBtn.style.display='none';
+  const infoBar=document.getElementById('rival-info-bar');if(infoBar)infoBar.textContent='';
+  const el=document.getElementById('rival-section');if(el)el.innerHTML='';
+  toast('Rivaal gewist');
+}
+
+function getRivalRoutes(data){return(data.sessions||[]).flatMap(s=>(s.routes||[]).map(r=>({...r,date:s.date})));}
+
+function getRivalStats(data){
+  const s=data.sessions||[],ar=getRivalRoutes(data);
+  const sent=ar.filter(r=>r.result!=='poging');
+  const pr=sent.length?sent.reduce((b,r)=>gi(r.grade)>gi(b.grade)?r:b,sent[0]):null;
+  const flash=ar.filter(r=>r.result==='flash');
+  const prf=flash.length?flash.reduce((b,r)=>gi(r.grade)>gi(b.grade)?r:b,flash[0]):null;
+  const rate=ar.length?Math.round((sent.length/ar.length)*100):0;
+  let streak=0;
+  if(s.length){const wk=d=>{const dt=new Date(d+'T00:00:00'),j=new Date(dt.getFullYear(),0,1);return`${dt.getFullYear()}-${Math.ceil((((dt-j)/86400000)+j.getDay()+1)/7)}`};const weeks=[...new Set(s.map(x=>wk(x.date)))].sort().reverse();const now=new Date(),j2=new Date(now.getFullYear(),0,1);const cw=`${now.getFullYear()}-${Math.ceil((((now-j2)/86400000)+j2.getDay()+1)/7)}`;if(weeks[0]===cw){streak=1;for(let i=1;i<weeks.length;i++){const[y1,w1]=weeks[i-1].split('-').map(Number),[y2,w2]=weeks[i].split('-').map(Number);if((y1===y2&&w1-w2===1)||(y1===y2+1&&w1===1&&w2>=51))streak++;else break;}}}
+  return{sessions:s.length,routes:ar.length,pr:pr?pr.grade:'—',prf:prf?prf.grade:'—',rate,streak};
+}
+
+function renderRivalSection(){
+  const el=document.getElementById('rival-section');if(!el)return;
+  if(!rivalData){el.innerHTML='';return;}
+  const myP=loadProfiles().find(p=>p.id===activeProfileId);
+  const myEmoji=myP?myP.emoji:'🧗',myName=myP?myP.name:'Jij';
+  const rivalEmoji=(rivalData.profile&&rivalData.profile.emoji)?rivalData.profile.emoji:'🏔️';
+  const me={sessions:sessions.length,routes:allRoutes().length,pr:getPR('top')?getPR('top').grade:'—',prf:getPR('flash')?getPR('flash').grade:'—',rate:allRoutes().length?Math.round(allRoutes().filter(r=>r.result!=='poging').length/allRoutes().length*100):0,streak:calcStreak()};
+  const them=getRivalStats(rivalData);
+  const compareVal=(myV,thV,gradeMode)=>{
+    const n=v=>(gradeMode?gi(v):Number(String(v).replace('%','').replace(' wk','')));
+    const m=n(myV),t=n(thV);
+    return{youWin:m>t,themWin:t>m};
+  };
+  const rows=[
+    {label:'PR Top',my:me.pr,th:them.pr,grade:true},
+    {label:'PR Flash',my:me.prf,th:them.prf,grade:true},
+    {label:'Sessies',my:String(me.sessions),th:String(them.sessions),grade:false},
+    {label:'Routes',my:String(me.routes),th:String(them.routes),grade:false},
+    {label:'Slagings%',my:me.rate+'%',th:them.rate+'%',grade:false},
+    {label:'Streak',my:me.streak+' wk',th:them.streak+' wk',grade:false}
+  ].map(r=>{
+    const{youWin,themWin}=compareVal(r.my,r.th,r.grade);
+    return`<div class="rival-row">
+      <div class="rival-val" style="text-align:left;color:${youWin?'var(--accent)':themWin?'var(--muted)':'var(--text)'}">${esc(r.my)}${youWin?' ✓':''}</div>
+      <div class="rival-label">${esc(r.label)}</div>
+      <div class="rival-val" style="text-align:right;color:${themWin?'var(--hang)':youWin?'var(--muted)':'var(--text)'}">${esc(r.th)}${themWin?' ✓':''}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div class="chart-card" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="chart-card-title">⚔️ Rivaal vergelijking</div>
+      <button onclick="clearRival()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Wis</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+      <div class="rival-name" style="color:var(--accent)">${myEmoji} ${esc(myName)}</div>
+      <div class="rival-name" style="color:var(--hang)">${rivalEmoji} ${esc(rivalName)}</div>
+    </div>
+    ${rows}
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   REST COUNTDOWN TIMER (hangboard)
+══════════════════════════════════════════ */
+function setRestPreset(secs,btn){
+  restPresetSecs=secs;restTimerSecs=secs;
+  document.querySelectorAll('.rest-preset-btn').forEach(b=>b.classList.remove('selected'));
+  if(btn)btn.classList.add('selected');
+  if(!restTimerRunning){updateRestDisplay();document.getElementById('rest-cd-sub').textContent='Druk start om rusttimer te beginnen';}
+}
+
+function toggleRestTimer(){
+  if(restTimerRunning){
+    clearInterval(restTimerInterval);restTimerRunning=false;
+    document.getElementById('btn-rest-timer').textContent='▶ Hervatten';
+    document.getElementById('btn-rest-timer').classList.remove('running');
+    document.getElementById('rest-cd-sub').textContent='Gepauzeerd';
+  }else{
+    if(restTimerSecs<=0)restTimerSecs=restPresetSecs;
+    restTimerRunning=true;
+    document.getElementById('btn-rest-timer').textContent='⏸ Pauzeren';
+    document.getElementById('btn-rest-timer').classList.add('running');
+    document.getElementById('rest-cd-sub').textContent='Aan het rusten...';
+    restTimerInterval=setInterval(()=>{
+      restTimerSecs--;updateRestDisplay();
+      if(restTimerSecs===10){haptic(30);}
+      else if(restTimerSecs===5){haptic(50);setTimeout(()=>haptic(50),200);}
+      else if(restTimerSecs<=0){
+        clearInterval(restTimerInterval);restTimerRunning=false;
+        if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
+        const disp=document.getElementById('rest-countdown');if(disp){disp.textContent='KLAAR!';disp.style.color='var(--success)';}
+        document.getElementById('btn-rest-timer').textContent='▶ Start rust';
+        document.getElementById('btn-rest-timer').classList.remove('running');
+        document.getElementById('rest-cd-sub').textContent='Rust voorbij — pak je set!';
+      }
+    },1000);
+  }
+}
+
+function resetRestTimer(){
+  clearInterval(restTimerInterval);restTimerRunning=false;restTimerSecs=restPresetSecs;
+  document.getElementById('btn-rest-timer').textContent='▶ Start rust';
+  document.getElementById('btn-rest-timer').classList.remove('running');
+  document.getElementById('rest-cd-sub').textContent='Druk start om rusttimer te beginnen';
+  updateRestDisplay();
+}
+
+function updateRestDisplay(){
+  const el=document.getElementById('rest-countdown');if(!el)return;
+  el.style.color=restTimerSecs<=5?'var(--danger)':restTimerSecs<=15?'var(--flash)':'var(--hang)';
+  el.textContent=fmtSecs(Math.max(0,restTimerSecs));
+}
+
+/* ══════════════════════════════════════════
+   ROUTE SETTER MODE
+══════════════════════════════════════════ */
+const SETTER_COLS=5,SETTER_ROWS=8;
+const HOLD_TYPES=['hand','start','foot','top'];
+const HOLD_ICONS={hand:'',start:'🟢',foot:'🔵',top:'🏁'};
+const HOLD_EMOJIS={start:'🟢',hand:'🟣',foot:'⚪',top:'🏁'};
+
+function openSetterModal(){
+  document.getElementById('setter-modal-ov')?.remove();
+  setterHolds=Array(SETTER_COLS*SETTER_ROWS).fill('');
+  setterActiveHoldType='hand';
+  setterAngle='Verticaal';
+  const ov=document.createElement('div');ov.className='modal-overlay';ov.id='setter-modal-ov';
+  const angles=['Slab','Verticaal','Overhang','Cave'];
+  const gradeOpts=GRADES.map(g=>`<option ${g==='6a'?'selected':''}>${g}</option>`).join('');
+  ov.innerHTML=`<div class="modal-box" style="max-height:90dvh">
+    <div class="modal-title">🏗️ Route instellen</div>
+    <div style="overflow-y:auto;flex:1">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div class="field"><label>Graad</label><select id="setter-grade">${gradeOpts}</select></div>
+        <div class="field"><label>Hoek</label>
+          <div class="setter-angle-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+            ${angles.map(a=>`<button class="setter-angle-btn${a===setterAngle?' active':''}" onclick="setSetterAngle('${a}',this)">${a}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="setter-hold-types">
+        <button class="setter-hold-btn active-hand" id="sht-hand" onclick="setSetterHold('hand')">✋ Greep</button>
+        <button class="setter-hold-btn" id="sht-start" onclick="setSetterHold('start')">🟢 Start</button>
+        <button class="setter-hold-btn" id="sht-foot" onclick="setSetterHold('foot')">🦶 Voet</button>
+        <button class="setter-hold-btn" id="sht-top" onclick="setSetterHold('top')">🏁 Top</button>
+      </div>
+      <div class="setter-legend">
+        <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(127,119,221,.5);border:1.5px solid var(--accent)"></div>Greep</div>
+        <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(76,175,80,.5);border:1.5px solid var(--success)"></div>Start</div>
+        <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(136,136,136,.4);border:1.5px solid #888"></div>Voet</div>
+        <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(255,193,7,.5);border:1.5px solid var(--flash)"></div>Top</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-align:center">Top ↑ &nbsp;&nbsp; Tik op een vakje om een greep te plaatsen &nbsp;&nbsp; ↓ Start</div>
+      <div class="setter-grid" id="setter-grid-el"></div>
+      <div class="field" style="margin-bottom:12px"><label>Naam (optioneel)</label><input type="text" id="setter-name" placeholder="bijv. De Spleet, Sector B links..."></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="confirm-cancel" onclick="document.getElementById('setter-modal-ov').remove()">Annuleren</button>
+      <button class="btn-save" style="flex:2;padding:14px;font-size:17px" onclick="saveFromSetter()">Route toevoegen →</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  renderSetterGrid();
+}
+
+function setSetterAngle(angle,btn){
+  setterAngle=angle;
+  document.querySelectorAll('.setter-angle-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+}
+
+function setSetterHold(type){
+  setterActiveHoldType=type;
+  HOLD_TYPES.forEach(t=>{const b=document.getElementById('sht-'+t);if(b){b.className='setter-hold-btn';if(t===type)b.classList.add('active-'+type);}});
+}
+
+function renderSetterGrid(){
+  const el=document.getElementById('setter-grid-el');if(!el)return;
+  el.innerHTML=Array.from({length:SETTER_COLS*SETTER_ROWS},(_,i)=>{
+    const h=setterHolds[i]||'';
+    const cls=h?'setter-cell h-'+h:'setter-cell';
+    const icon=h?HOLD_EMOJIS[h]||'':'';
+    return`<div class="${cls}" data-idx="${i}" onclick="toggleSetterCell(${i})">${icon}</div>`;
+  }).join('');
+}
+
+function toggleSetterCell(idx){
+  const cur=setterHolds[idx]||'';
+  setterHolds[idx]=cur===setterActiveHoldType?'':setterActiveHoldType;
+  renderSetterGrid();haptic(6);
+}
+
+function saveFromSetter(){
+  const grade=document.getElementById('setter-grade')?.value||'6a';
+  const name=document.getElementById('setter-name')?.value.trim()||'';
+  const holdsMap=setterHolds.join(',');
+  document.getElementById('setter-modal-ov')?.remove();
+  addRouteCard(grade,1,'top',setterAngle);
+  const id=routeCount;
+  const typeEl=document.getElementById('rt-'+id);
+  if(typeEl)typeEl.value=setterAngle;
+  if(name&&holdsMap.replace(/,/g,'').trim()){
+    const card=document.getElementById('rc-'+id);
+    if(card){
+      const badge=document.createElement('div');
+      badge.style.cssText='font-size:11px;color:var(--accent);padding:4px 14px 8px;display:flex;align-items:center;gap:6px';
+      badge.innerHTML=`<span>🏗️ Route ingesteld — ${setterHolds.filter(Boolean).length} grepen${name?' · '+esc(name):''}`;
+      card.appendChild(badge);
+    }
+  }
+  toast('Route toegevoegd vanuit setter!');
 }
 
 /* ── Bootstrap: show profile screen before anything else ── */
