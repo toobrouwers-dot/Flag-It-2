@@ -14,8 +14,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#0a0a0a;--surface:#141414;--surface2:#1e1e1e;
-  --border:rgba(255,255,255,.08);--accent:#7f77dd;--accent2:#afa9ec;
+  --bg:#0a0a0a;--surface:#181818;--surface2:#232323;
+  --border:rgba(255,255,255,.09);--accent:#7f77dd;--accent2:#afa9ec;
   --text:#f5f5f5;--muted:#888;--success:#4caf50;--flash:#ffc107;
   --attempt:#555;--danger:#e53935;--hang:#e91e8c;
   --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
@@ -26,8 +26,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* NAV */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(14,14,14,.97);backdrop-filter:blur(12px);border-top:.5px solid var(--border);display:flex;padding-bottom:var(--safe-bot);z-index:100}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;background:none;border:none;color:var(--muted);font-family:'Barlow',sans-serif;font-size:9px;font-weight:500;letter-spacing:.3px;cursor:pointer;transition:color .2s;text-transform:uppercase}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;background:none;border:none;color:var(--muted);font-family:'Barlow',sans-serif;font-size:9px;font-weight:500;letter-spacing:.3px;cursor:pointer;transition:color .2s;text-transform:uppercase;position:relative}
 .nav-btn.active{color:var(--accent)}
+.nav-btn.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:20px;height:3px;background:var(--accent);border-radius:0 0 4px 4px}
 .nav-btn svg{width:21px;height:21px}
 
 /* PAGES */
@@ -41,7 +42,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .page-sub{font-size:13px;color:var(--muted);margin-top:2px}
 
 /* HERO */
-.hero-stats{padding:calc(var(--safe-top) + 24px) 20px 20px;background:linear-gradient(160deg,#0f0d1f 0%,var(--bg) 60%);border-bottom:.5px solid var(--border)}
+.hero-stats{padding:calc(var(--safe-top) + 24px) 20px 20px;background:linear-gradient(160deg,#15113e 0%,#0d0b20 40%,var(--bg) 70%);border-bottom:.5px solid var(--border)}
 .hero-greeting{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
 .hero-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;line-height:1;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:10px}
 .hero-logo{width:38px;height:38px;border-radius:10px;display:inline-block;animation:flagWave 2s ease-in-out infinite;transform-origin:bottom left}
@@ -58,10 +59,11 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .streak-text-main{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#ff7043;text-transform:uppercase}
 .streak-text-sub{font-size:12px;color:var(--muted)}
 
-.section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:20px 20px 10px}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:20px 20px 10px;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';display:block;width:3px;height:12px;background:var(--accent);border-radius:2px;flex-shrink:0}
 
 /* ACTIVITY CARD */
-.activity-card{margin:0 16px 12px;background:var(--surface);border-radius:16px;border:.5px solid var(--border);overflow:hidden;animation:slideUp .3s ease both}
+.activity-card{margin:0 16px 12px;background:var(--surface);border-radius:16px;border:.5px solid var(--border);overflow:hidden;animation:slideUp .3s ease both;box-shadow:0 2px 16px rgba(0,0,0,.55)}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .activity-header{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px 0}
 .activity-gym{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase}
@@ -70,8 +72,8 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .activity-max{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;color:var(--accent);line-height:1}
 .activity-max-label{font-size:10px;color:var(--muted);text-transform:uppercase;text-align:right;letter-spacing:.5px}
 .activity-routes{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 14px}
-.route-chip{display:flex;align-items:center;gap:5px;background:var(--surface2);border-radius:20px;padding:4px 10px 4px 6px;font-size:13px;font-weight:500}
-.route-chip .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-sizing:content-box}
+.route-chip{display:flex;align-items:center;gap:5px;border-radius:20px;padding:4px 10px 4px 6px;font-size:13px;font-weight:500}
+.route-chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .chip-top .dot{background:var(--success)}.chip-flash .dot{background:var(--flash)}.chip-poging .dot{background:var(--attempt)}
 
 .btn-delete-session{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:8px;display:flex;align-items:center;transition:color .2s,background .2s;margin-top:2px}
@@ -148,6 +150,7 @@ select option{background:#1e1e1e}
 .route-fields .field.full{grid-column:1/-1}
 .result-toggle{display:flex;gap:6px}
 .result-btn{flex:1;padding:10px 4px;border-radius:8px;border:.5px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s}
+.result-btn:active{transform:scale(1.06)}
 .result-btn.sel-top{background:rgba(76,175,80,.2);border-color:var(--success);color:var(--success)}
 .result-btn.sel-flash{background:rgba(255,193,7,.2);border-color:var(--flash);color:var(--flash)}
 .result-btn.sel-poging{background:rgba(85,85,85,.3);border-color:#777;color:#ccc}
@@ -162,9 +165,9 @@ select option{background:#1e1e1e}
 /* STATS */
 .stats-content{padding:16px 20px}
 .pr-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.pr-card{background:var(--surface);border-radius:14px;border:.5px solid var(--border);padding:16px}
+.pr-card{background:var(--surface);border-radius:14px;border:.5px solid var(--border);padding:16px;box-shadow:0 2px 14px rgba(0,0,0,.45)}
 .pr-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
-.pr-grade{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:800;line-height:1;color:var(--accent)}
+.pr-grade{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:800;line-height:1;color:var(--accent);text-shadow:0 0 22px rgba(127,119,221,.4)}
 .pr-grade.flash{color:var(--flash)}
 .pr-date{font-size:11px;color:var(--muted);margin-top:4px}
 .chart-card{background:var(--surface);border-radius:14px;border:.5px solid var(--border);padding:16px;margin-bottom:16px}
@@ -516,6 +519,10 @@ select option{background:#1e1e1e}
 .coach-advice-tag{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.8px;border:.5px solid;border-radius:20px;padding:3px 10px}
 .coach-advice-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
 .coach-advice-body{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* HEAT BAR */
+.heat-bar{display:flex;gap:2px;padding:0 16px 12px}
+.heat-block{height:4px;border-radius:2px;flex:1;min-width:3px;max-width:20px;opacity:.9}
 </style>
 </head>
 <body>
@@ -1380,7 +1387,8 @@ function renderFeed(){
     const s=item.s;
     const idx=cardIdx++;
     const mg=maxGrade(s.routes);
-    const chips=s.routes.map(r=>{const gc=GRADE_COLORS[GRADES.indexOf(r.grade)]||'#555';return`<div class="route-chip chip-${r.result}"><div class="dot" style="border:2px solid ${gc}"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`;}).join('');
+    const chips=s.routes.map(r=>{const gc=GRADE_COLORS[GRADES.indexOf(r.grade)]||'#555';return`<div class="route-chip chip-${r.result}" style="background:${gc}22;border:.5px solid ${gc}55"><div class="dot"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`;}).join('');
+    const heat=s.routes.map(r=>{const gc=GRADE_COLORS[GRADES.indexOf(r.grade)]||'#555';return`<div class="heat-block" style="background:${gc}"></div>`;}).join('');
     const feelEmojis=['😓','😐','💪','🔥'];
     const feelStr=s.feel!=null?` · <span class="feed-feel">${feelEmojis[s.feel]}</span>`:'';
     return`${header}<div class="activity-card" style="animation-delay:${idx*.04}s">
@@ -1407,6 +1415,7 @@ function renderFeed(){
         </div>
       </div>
       <div class="activity-routes">${chips}</div>
+      <div class="heat-bar">${heat}</div>
     </div>`;
   }).join('');
 }
@@ -2215,7 +2224,7 @@ function showSessionDetailModal(s){
   document.getElementById('sess-detail-ov')?.remove();
   const mg=maxGrade(s.routes);
   const dur=(s.sessionStart&&s.sessionEnd)?fmtSecs(Math.floor((s.sessionEnd-s.sessionStart)/1000)):null;
-  const chips=s.routes.map(r=>{const gc=GRADE_COLORS[GRADES.indexOf(r.grade)]||'#555';return`<div class="route-chip chip-${r.result}"><div class="dot" style="border:2px solid ${gc}"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`;}).join('');
+  const chips=s.routes.map(r=>{const gc=GRADE_COLORS[GRADES.indexOf(r.grade)]||'#555';return`<div class="route-chip chip-${r.result}" style="background:${gc}22;border:.5px solid ${gc}55"><div class="dot"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`;}).join('');
   const ov=document.createElement('div');ov.className='modal-overlay';ov.id='sess-detail-ov';
   ov.innerHTML=`<div class="modal-box">
     <div class="modal-title">${esc(s.gym||'Sessie')} <span style="font-size:14px;color:var(--muted);font-weight:400">${fmtDate(s.date)}</span></div>
