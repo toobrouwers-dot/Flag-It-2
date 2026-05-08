@@ -608,6 +608,17 @@ select option{background:#1e1e1e}
 .setter-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .setter-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
 .setter-leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.setter-dim-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--surface2);border-radius:10px;border:.5px solid var(--border)}
+.setter-dim-label{font-size:12px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.setter-dim-ctrl{display:flex;align-items:center;gap:8px}
+.setter-dim-btn{width:28px;height:28px;border-radius:7px;border:.5px solid var(--border);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;padding:0;line-height:1}
+.setter-dim-btn:active{background:rgba(127,119,221,.2)}
+.setter-dim-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--accent);min-width:20px;text-align:center}
+.setter-proj-indicator{margin-bottom:10px;padding:10px 12px;border-radius:10px;border:.5px dashed rgba(127,119,221,.4);background:rgba(127,119,221,.05);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
+.setter-proj-btn{background:none;border:.5px solid rgba(127,119,221,.5);border-radius:8px;color:var(--accent);font-family:'Barlow',sans-serif;font-size:12px;padding:6px 10px;cursor:pointer;white-space:nowrap;transition:background .15s}
+.setter-proj-btn:active{background:rgba(127,119,221,.1)}
+.setter-view-grid{display:grid;gap:4px;margin:0 0 12px;pointer-events:none}
+.setter-view-cell{height:34px;border-radius:6px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:14px}
 
 /* PROJECT NUDGE CARDS */
 .proj-nudge-card{margin:0 16px 10px;background:linear-gradient(135deg,rgba(255,193,7,.1),rgba(255,193,7,.03));border:.5px solid rgba(255,193,7,.25);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;animation:slideUp .3s ease both}
@@ -958,7 +969,8 @@ const GRIPS=['Volgreep','Half-krim','Krim','Sleuf','Mono','Twee-vinger','Pinch',
 let sessions=[],gyms=[],goals=[],hangSessions=[],projects=[],injuries=[],competitions=[],gymResets=[];
 let rivalData=null,rivalName='Rivaal';
 let restPresetSecs=90,restTimerSecs=90,restTimerInterval=null,restTimerRunning=false;
-let setterHolds=[],setterActiveHoldType='hand',setterAngle='Verticaal';
+let setterHolds=[],setterActiveHoldType='hand',setterAngle='Verticaal',setterCols=5,setterRows=8;
+let pendingSetterData=null;
 let activePlan=null;
 let feedTab='feed';
 let chartP=null,chartG=null,chartH=null,tliChart=null,stokeRadarChart=null;
@@ -2486,6 +2498,7 @@ function renderProjects(){
         ${p.betaNotes?`<div class="project-beta-preview">📝 ${esc(p.betaNotes)}</div>`:''}
         <div class="project-card-actions">
           <button class="btn-edit-project" onclick="openProjectModal(${p.id})">Bewerken</button>
+          ${p.setterData&&p.setterData.holds&&p.setterData.holds.some(Boolean)?`<button class="btn-edit-project" style="background:rgba(127,119,221,.12);border-color:rgba(127,119,221,.3);color:var(--accent)" onclick="viewProjectSetter(${p.id})">🗺️ Kaart</button>`:''}
           <button class="btn-delete-project" onclick="deleteProject(${p.id})" title="Verwijderen">${trashSVG}</button>
         </div>
       </div>`;
@@ -2527,6 +2540,7 @@ function confirmDeleteProject(id){
 function openProjectModal(id){
   document.getElementById('proj-modal-ov')?.remove();
   const existing=id?projects.find(p=>p.id===id):null;
+  pendingSetterData=existing&&existing.setterData?{...existing.setterData,holds:[...existing.setterData.holds]}:null;
   const ov=document.createElement('div');ov.className='modal-overlay';ov.id='proj-modal-ov';
   const gradeOpts=GRADES.map(g=>`<option ${(existing?existing.grade:GRADES[10])===g?'selected':''}>${g}</option>`).join('');
   const gymOpts=gyms.map(g=>`<option ${existing&&existing.gym===g.name?'selected':''}>${esc(g.name)}</option>`).join('');
@@ -2549,7 +2563,10 @@ function openProjectModal(id){
       </div>
       <div class="field" style="margin-bottom:10px"><label>Pogingen</label><input type="number" id="pj-attempts" value="${existing?existing.attempts:0}" min="0" max="9999"></div>
       <div class="field" style="margin-bottom:10px"><label>Highpoint</label><textarea id="pj-highpoint" placeholder="bijv. tot 3e greep voor de eindgreep, of: de crux move lukt niet">${existing?esc(existing.highpoint):''}</textarea></div>
-      <div class="field" style="margin-bottom:16px"><label>Beta-notities</label><textarea id="pj-beta" placeholder="bijv. Linkervoet op de reglette, dan dynamisch naar de slooper boven">${existing?esc(existing.betaNotes):''}</textarea></div>
+      <div class="field" style="margin-bottom:12px"><label>Beta-notities</label><textarea id="pj-beta" placeholder="bijv. Linkervoet op de reglette, dan dynamisch naar de slooper boven">${existing?esc(existing.betaNotes):''}</textarea></div>
+      <div class="field" style="margin-bottom:4px"><label>Greeppatroon (setter)</label>
+        <div class="setter-proj-indicator" id="pj-setter-indicator"></div>
+      </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:4px">
       <button class="confirm-cancel" onclick="document.getElementById('proj-modal-ov').remove()">Annuleren</button>
@@ -2558,6 +2575,7 @@ function openProjectModal(id){
   </div>`;
   document.body.appendChild(ov);
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  updateProjectSetterIndicator();
 }
 
 function setProjStatus(btn){
@@ -2575,17 +2593,19 @@ function saveProjectFromModal(id){
   const attempts=Math.max(0,parseInt(document.getElementById('pj-attempts').value)||0);
   const highpoint=document.getElementById('pj-highpoint').value.trim();
   const betaNotes=document.getElementById('pj-beta').value.trim();
+  const setterData=pendingSetterData&&pendingSetterData.holds.some(Boolean)?{...pendingSetterData}:null;
+  pendingSetterData=null;
   document.getElementById('proj-modal-ov')?.remove();
   const today=new Date().toISOString().split('T')[0];
   if(id){
     const idx=projects.findIndex(p=>p.id===id);
     if(idx!==-1){
       const wasCompleted=projects[idx].status==='completed';
-      projects[idx]={...projects[idx],name,grade,gym,status,attempts,highpoint,betaNotes,
+      projects[idx]={...projects[idx],name,grade,gym,status,attempts,highpoint,betaNotes,setterData,
         completedAt:status==='completed'&&!wasCompleted?today:projects[idx].completedAt||''};
     }
   }else{
-    projects.push({id:Date.now(),name,grade,gym,status,attempts,highpoint,betaNotes,createdAt:today,completedAt:status==='completed'?today:''});
+    projects.push({id:Date.now(),name,grade,gym,status,attempts,highpoint,betaNotes,setterData,createdAt:today,completedAt:status==='completed'?today:''});
   }
   saveProjects();renderProjects();
   haptic(15);
@@ -4120,28 +4140,48 @@ function updateRestDisplay(){
 /* ══════════════════════════════════════════
    ROUTE SETTER MODE
 ══════════════════════════════════════════ */
-const SETTER_COLS=5,SETTER_ROWS=8;
 const HOLD_TYPES=['hand','start','foot','top'];
 const HOLD_ICONS={hand:'',start:'🟢',foot:'🔵',top:'🏁'};
 const HOLD_EMOJIS={start:'🟢',hand:'🟣',foot:'⚪',top:'🏁'};
 
-function openSetterModal(){
+function openSetterModal(fromProject){
   document.getElementById('setter-modal-ov')?.remove();
-  setterHolds=Array(SETTER_COLS*SETTER_ROWS).fill('');
+  const existingData=fromProject&&pendingSetterData;
+  setterCols=existingData?existingData.cols:5;
+  setterRows=existingData?existingData.rows:8;
+  setterHolds=existingData?[...existingData.holds]:Array(setterCols*setterRows).fill('');
   setterActiveHoldType='hand';
-  setterAngle='Verticaal';
+  setterAngle=existingData?existingData.angle:'Verticaal';
   const ov=document.createElement('div');ov.className='modal-overlay';ov.id='setter-modal-ov';
   const angles=['Slab','Verticaal','Overhang','Cave'];
-  const gradeOpts=GRADES.map(g=>`<option ${g==='6a'?'selected':''}>${g}</option>`).join('');
+  const gradeOpts=fromProject?'':GRADES.map(g=>`<option ${g==='6a'?'selected':''}>${g}</option>`).join('');
   ov.innerHTML=`<div class="modal-box" style="max-height:90dvh">
-    <div class="modal-title">🏗️ Route instellen</div>
+    <div class="modal-title">🏗️ ${fromProject?'Greeppatroon instellen':'Route instellen'}</div>
     <div style="overflow-y:auto;flex:1">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      ${!fromProject?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
         <div class="field"><label>Graad</label><select id="setter-grade">${gradeOpts}</select></div>
         <div class="field"><label>Hoek</label>
           <div class="setter-angle-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
             ${angles.map(a=>`<button class="setter-angle-btn${a===setterAngle?' active':''}" onclick="setSetterAngle('${a}',this)">${a}</button>`).join('')}
           </div>
+        </div>
+      </div>`:`<div class="field" style="margin-bottom:12px"><label>Hoek</label>
+          <div class="setter-angle-btns" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px">
+            ${angles.map(a=>`<button class="setter-angle-btn${a===setterAngle?' active':''}" onclick="setSetterAngle('${a}',this)">${a}</button>`).join('')}
+          </div>
+        </div>`}
+      <div class="setter-dim-row">
+        <span class="setter-dim-label">Kolommen</span>
+        <div class="setter-dim-ctrl">
+          <button class="setter-dim-btn" onclick="adjustSetterDim('cols',-1)">−</button>
+          <span class="setter-dim-val" id="setter-cols-val">${setterCols}</span>
+          <button class="setter-dim-btn" onclick="adjustSetterDim('cols',1)">+</button>
+        </div>
+        <span class="setter-dim-label">Rijen</span>
+        <div class="setter-dim-ctrl">
+          <button class="setter-dim-btn" onclick="adjustSetterDim('rows',-1)">−</button>
+          <span class="setter-dim-val" id="setter-rows-val">${setterRows}</span>
+          <button class="setter-dim-btn" onclick="adjustSetterDim('rows',1)">+</button>
         </div>
       </div>
       <div class="setter-hold-types">
@@ -4157,12 +4197,15 @@ function openSetterModal(){
         <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(255,193,7,.5);border:1.5px solid var(--flash)"></div>Top</div>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-align:center">Top ↑ &nbsp;&nbsp; Tik op een vakje om een greep te plaatsen &nbsp;&nbsp; ↓ Start</div>
-      <div class="setter-grid" id="setter-grid-el"></div>
-      <div class="field" style="margin-bottom:12px"><label>Naam (optioneel)</label><input type="text" id="setter-name" placeholder="bijv. De Spleet, Sector B links..."></div>
+      <div class="setter-grid" id="setter-grid-el" style="grid-template-columns:repeat(${setterCols},1fr)"></div>
+      ${!fromProject?`<div class="field" style="margin-bottom:12px"><label>Naam (optioneel)</label><input type="text" id="setter-name" placeholder="bijv. De Spleet, Sector B links..."></div>`:''}
     </div>
     <div style="display:flex;gap:8px;margin-top:4px">
       <button class="confirm-cancel" onclick="document.getElementById('setter-modal-ov').remove()">Annuleren</button>
-      <button class="btn-save" style="flex:2;padding:14px;font-size:17px" onclick="saveFromSetter()">Route toevoegen →</button>
+      ${fromProject
+        ?`<button class="btn-save" style="flex:2;padding:14px;font-size:17px" onclick="applySetterToProject()">Toepassen ✓</button>`
+        :`<button class="btn-save" style="flex:2;padding:14px;font-size:17px" onclick="saveFromSetter()">Route toevoegen →</button>`
+      }
     </div>
   </div>`;
   document.body.appendChild(ov);
@@ -4183,7 +4226,8 @@ function setSetterHold(type){
 
 function renderSetterGrid(){
   const el=document.getElementById('setter-grid-el');if(!el)return;
-  el.innerHTML=Array.from({length:SETTER_COLS*SETTER_ROWS},(_,i)=>{
+  el.style.gridTemplateColumns=`repeat(${setterCols},1fr)`;
+  el.innerHTML=Array.from({length:setterCols*setterRows},(_,i)=>{
     const h=setterHolds[i]||'';
     const cls=h?'setter-cell h-'+h:'setter-cell';
     const icon=h?HOLD_EMOJIS[h]||'':'';
@@ -4216,6 +4260,73 @@ function saveFromSetter(){
     }
   }
   toast('Route toegevoegd vanuit setter!');
+}
+
+function adjustSetterDim(dim,delta){
+  if(dim==='cols'){
+    setterCols=Math.min(8,Math.max(3,setterCols+delta));
+    const el=document.getElementById('setter-cols-val');if(el)el.textContent=setterCols;
+  }else{
+    setterRows=Math.min(14,Math.max(4,setterRows+delta));
+    const el=document.getElementById('setter-rows-val');if(el)el.textContent=setterRows;
+  }
+  setterHolds=Array(setterCols*setterRows).fill('');
+  renderSetterGrid();
+}
+
+function applySetterToProject(){
+  pendingSetterData={holds:[...setterHolds],angle:setterAngle,cols:setterCols,rows:setterRows};
+  document.getElementById('setter-modal-ov')?.remove();
+  updateProjectSetterIndicator();
+  toast('Greeppatroon opgeslagen!');
+}
+
+function updateProjectSetterIndicator(){
+  const el=document.getElementById('pj-setter-indicator');if(!el)return;
+  const count=pendingSetterData?pendingSetterData.holds.filter(Boolean).length:0;
+  if(pendingSetterData&&count>0){
+    el.innerHTML=`<span style="color:var(--accent);font-size:12px">✓ ${count} grepen · ${esc(pendingSetterData.angle)}</span><button class="setter-proj-btn" onclick="openSetterModal(true)">Bewerken</button>`;
+  }else{
+    el.innerHTML=`<span style="color:var(--muted);font-size:12px">Nog geen greeppatroon</span><button class="setter-proj-btn" onclick="openSetterModal(true)">🏗️ Instellen</button>`;
+  }
+}
+
+function viewProjectSetter(id){
+  const p=projects.find(x=>x.id===id);if(!p||!p.setterData)return;
+  const sd=p.setterData;
+  const cols=sd.cols||5,rows=sd.rows||8;
+  document.getElementById('proj-view-setter-ov')?.remove();
+  const ov=document.createElement('div');ov.className='modal-overlay';ov.id='proj-view-setter-ov';
+  const gridHTML=Array.from({length:cols*rows},(_,i)=>{
+    const h=sd.holds[i]||'';
+    const cls=h?'setter-view-cell h-'+h:'setter-view-cell';
+    const icon=h?HOLD_EMOJIS[h]||'':'';
+    return`<div class="${cls}">${icon}</div>`;
+  }).join('');
+  const title=p.name?esc(p.name):esc(p.grade);
+  ov.innerHTML=`<div class="modal-box" style="max-height:90dvh">
+    <div class="modal-title">🗺️ ${title}</div>
+    <div style="overflow-y:auto;flex:1">
+      <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--muted)">Hoek: <strong style="color:var(--text)">${esc(sd.angle)}</strong></span>
+        <span style="font-size:12px;color:var(--muted)">Grepen: <strong style="color:var(--accent)">${sd.holds.filter(Boolean).length}</strong></span>
+        <span style="font-size:12px;color:var(--muted)">Grid: <strong style="color:var(--text)">${cols}×${rows}</strong></span>
+      </div>
+      <div class="setter-legend" style="margin-bottom:10px">
+        <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(127,119,221,.5);border:1.5px solid var(--accent)"></div>Greep</div>
+        <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(76,175,80,.5);border:1.5px solid var(--success)"></div>Start</div>
+        <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(136,136,136,.4);border:1.5px solid #888"></div>Voet</div>
+        <div class="setter-leg-item"><div class="setter-leg-dot" style="background:rgba(255,193,7,.5);border:1.5px solid var(--flash)"></div>Top</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-align:center">Top ↑ &nbsp;&nbsp;↓ Start</div>
+      <div class="setter-view-grid" style="grid-template-columns:repeat(${cols},1fr)">${gridHTML}</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-save" style="flex:1;padding:14px;font-size:16px" onclick="document.getElementById('proj-view-setter-ov').remove()">Sluiten</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
 }
 
 /* ── Bootstrap: show profile screen before anything else ── */
