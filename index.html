@@ -71,7 +71,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
 .activity-max-label{font-size:10px;color:var(--muted);text-transform:uppercase;text-align:right;letter-spacing:.5px}
 .activity-routes{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 14px}
 .route-chip{display:flex;align-items:center;gap:5px;background:var(--surface2);border-radius:20px;padding:4px 10px 4px 6px;font-size:13px;font-weight:500}
-.route-chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.route-chip .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-sizing:content-box}
 .chip-top .dot{background:var(--success)}.chip-flash .dot{background:var(--flash)}.chip-poging .dot{background:var(--attempt)}
 
 .btn-delete-session{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:8px;display:flex;align-items:center;transition:color .2s,background .2s;margin-top:2px}
@@ -812,8 +812,8 @@ select option{background:#1e1e1e}
 /* ══════════════════════════════════════════
    CONSTANTS
 ══════════════════════════════════════════ */
-const GRADES=['4','4+','5','5+','6a','6a+','6b','6b+','6c','6c+','7a','7a+','7b','7b+','7c','7c+','8a','8a+','8b','8b+'];
-const GRADE_COLORS=['#9FE1CB','#5DCAA5','#1D9E75','#0F6E56','#B5D4F4','#85B7EB','#378ADD','#185FA5','#CECBF6','#AFA9EC','#7F77DD','#534AB7','#F5C4B3','#F0997B','#D85A30','#993C1D','#F4C0D1','#ED93B1','#D4537E','#993356'];
+const GRADES=['4','4+','5','5+','5a','5b','5c','6a','6a+','6b','6b+','6c','6c+','7a','7a+','7b','7b+','7c','7c+','8a','8a+','8b','8b+'];
+const GRADE_COLORS=['#9FE1CB','#5DCAA5','#1D9E75','#0F6E56','#7EC8A0','#50B090','#2A9480','#B5D4F4','#85B7EB','#378ADD','#185FA5','#CECBF6','#AFA9EC','#7F77DD','#534AB7','#F5C4B3','#F0997B','#D85A30','#993C1D','#F4C0D1','#ED93B1','#D4537E','#993356'];
 const TYPES=['Slab','Verticaal','Overhang','Cave','Dyno','Mantle','Pinch','Crimp','Sloper'];
 const GRIPS=['Volgreep','Half-krim','Krim','Sleuf','Mono','Twee-vinger','Pinch','Open hand','Jug'];
 
@@ -1380,7 +1380,7 @@ function renderFeed(){
     const s=item.s;
     const idx=cardIdx++;
     const mg=maxGrade(s.routes);
-    const chips=s.routes.map(r=>`<div class="route-chip chip-${r.result}"><div class="dot"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`).join('');
+    const chips=s.routes.map(r=>{const gc=GRADE_COLORS[GRADES.indexOf(r.grade)]||'#555';return`<div class="route-chip chip-${r.result}"><div class="dot" style="border:2px solid ${gc}"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`;}).join('');
     const feelEmojis=['😓','😐','💪','🔥'];
     const feelStr=s.feel!=null?` · <span class="feed-feel">${feelEmojis[s.feel]}</span>`:'';
     return`${header}<div class="activity-card" style="animation-delay:${idx*.04}s">
@@ -1392,6 +1392,9 @@ function renderFeed(){
         </div>
         <div style="display:flex;align-items:flex-start;gap:4px">
           <div style="text-align:right;margin-right:8px"><div class="activity-max">${mg?mg.grade:'—'}</div><div class="activity-max-label">max</div></div>
+          <button class="btn-edit-session" onclick="repeatSession(${s.id})" title="Herhaal sessie">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </button>
           <button class="btn-edit-session" onclick="shareSession(${s.id})" title="Delen">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           </button>
@@ -1437,6 +1440,15 @@ function clearFilters(){
   const fg=document.getElementById('filter-gym');const fgr=document.getElementById('filter-grade');
   if(fg)fg.value='';if(fgr)fgr.value='';
   renderFeed();
+}
+
+function repeatSession(id){
+  const s=sessions.find(x=>x.id===id);if(!s)return;
+  showPage('log');
+  document.getElementById('inp-date').value=new Date().toISOString().slice(0,10);
+  const gs=document.getElementById('inp-gym-select');
+  if(gs&&s.gym){for(let i=0;i<gs.options.length;i++){if(gs.options[i].value===s.gym){gs.selectedIndex=i;break;}}}
+  toast('Gym ingesteld — voeg routes toe!');
 }
 
 function deleteSession(id){
@@ -2203,7 +2215,7 @@ function showSessionDetailModal(s){
   document.getElementById('sess-detail-ov')?.remove();
   const mg=maxGrade(s.routes);
   const dur=(s.sessionStart&&s.sessionEnd)?fmtSecs(Math.floor((s.sessionEnd-s.sessionStart)/1000)):null;
-  const chips=s.routes.map(r=>`<div class="route-chip chip-${r.result}"><div class="dot"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`).join('');
+  const chips=s.routes.map(r=>{const gc=GRADE_COLORS[GRADES.indexOf(r.grade)]||'#555';return`<div class="route-chip chip-${r.result}"><div class="dot" style="border:2px solid ${gc}"></div>${esc(r.grade)}${r.type?' · '+esc(r.type):''}</div>`;}).join('');
   const ov=document.createElement('div');ov.className='modal-overlay';ov.id='sess-detail-ov';
   ov.innerHTML=`<div class="modal-box">
     <div class="modal-title">${esc(s.gym||'Sessie')} <span style="font-size:14px;color:var(--muted);font-weight:400">${fmtDate(s.date)}</span></div>
